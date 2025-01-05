@@ -1,0 +1,51 @@
+logging:
+  level:
+    root: warn
+    lab.is.bank: debug
+
+spring:
+  application:
+    name: FirstLab
+
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://localhost:8282/realms/myrealm
+          jwk-set-uri: ${spring.security.oauth2.resourceserver.jwt.issuer-uri}/protocol/openid-connect/certs
+
+
+  datasource:
+    #    todo ????? ?????? ?? jdbc:postgresql://postgresql:5437/first ??? ??????? ? ??????
+    url: jdbc:postgresql://localhost:5444/course
+    username: user
+    password: user
+
+  jpa:
+    show-sql: true
+
+    hibernate:
+      ddl-auto: create-drop
+
+server:
+  error:
+    include-stacktrace: never
+    whitelabel:
+      enabled: false
+
+keycloak:
+  realm: myrealm
+  resource: myclient
+  #  bearer-only: true
+  auth-server-url: http://localhost:8282/auth
+
+jwt:
+  auth:
+    converter:
+      resource-id: spring-boot
+      principle-attribute: preferred_username
+#token:
+#  signing:
+#    key: Q5v1CXQ1Y64cayU84BnlR3Az9fVFe8Bvn6Mrf68bX5U=
+#  salt:
+#    PBKDF2WithHmacSHA1

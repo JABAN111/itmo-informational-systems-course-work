@@ -1,0 +1,11 @@
+*{
+    background: mediumvioletred;
+}
+body {
+    background: red;
+    /*url(../geo);*/
+    background-size: cover;
+}
+.login-pf body {
+    background: DimGrey none;
+}

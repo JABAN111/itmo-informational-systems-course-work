@@ -1,0 +1,48 @@
+services:
+  postgres:
+    image: postgres:13.3
+    environment:
+      POSTGRES_DB: "course"
+      POSTGRES_USER: "user"
+      POSTGRES_PASSWORD: "user"
+    ports:
+      - "5444:5432"
+
+  keycloak-postgres:
+    image: library/postgres:${KC_POSTGRES_IMAGE_TAG:-14}
+    container_name: ${POSTGRES_CONTAINER_NAME:-postgres}
+    restart: on-failure
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin
+      POSTGRES_DB: psql_keycloak
+    ports:
+      - ${KC_POSTGRES_PORT_MAPPING:-5435}:5432
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:20.0.2
+    container_name: keycloak
+    command:
+      - start-dev --auto-build --db postgres --hostname-strict-https false --hostname-strict false --proxy edge --http-enabled true --import-realm
+    environment:
+      KC_DB_URL: jdbc:postgresql://keycloak-postgres:5432/psql_keycloak
+      KC_DB_USERNAME: admin
+      KC_DB_PASSWORD: admin
+      KC_DB_SCHEMA: public
+      KC_FEATURES: preview
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+    volumes:
+      - keycloak_data:/opt/keycloak/data/
+      - ./keycloak-theme/keycloakify-starter/dist_keycloak/keycloak-theme-for-kc-all-other-versions.jar:/opt/keycloak/providers/keycloak-theme-for-kc-all-other-versions.jar
+    ports:
+      - "8282:8080"
+    depends_on:
+      - keycloak-postgres
+
+volumes:
+  keycloak_data:

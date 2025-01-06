@@ -2,20 +2,17 @@ package lab.`is`.bank.services.depositManagement.impl
 
 import lab.`is`.bank.database.entity.Client
 import lab.`is`.bank.database.entity.depositManagement.DepositAccount
-import lab.`is`.bank.database.entity.depositManagement.transaction.Transaction
-import lab.`is`.bank.database.entity.depositManagement.transaction.TransactionStatus
 import lab.`is`.bank.database.entity.depositManagement.transaction.TransactionType
 import lab.`is`.bank.database.repository.depositManagement.DepositAccountRepository
-import lab.`is`.bank.database.repository.depositManagement.transaction.TransactionRepository
 import lab.`is`.bank.dto.ClientDto
 import lab.`is`.bank.dto.deposit.DepositAccountDto
 import lab.`is`.bank.dto.deposit.OperationDto
 import lab.`is`.bank.mapper.deposit.DepositAccountMapper
 import lab.`is`.bank.services.auth.interfaces.ClientService
-import lab.`is`.bank.services.auth.interfaces.StaffService
 import lab.`is`.bank.services.depositManagement.exception.MoneyTypeException
 import lab.`is`.bank.services.depositManagement.exception.NotEnoughMoneyException
 import lab.`is`.bank.services.depositManagement.interfaces.DepositService
+import lab.`is`.bank.services.depositManagement.interfaces.TransactionService
 import lab.`is`.bank.services.exception.ObjectNotExistException
 
 import org.slf4j.Logger
@@ -31,27 +28,41 @@ import kotlin.Throws
 @Transactional
 class DepositAccountService(
     private val depositAccountRepository: DepositAccountRepository,
-    private val clientService: ClientService
+    private val clientService: ClientService,
+    private val transactionService: TransactionService
 ) : DepositService {
 
     private val log: Logger = LoggerFactory.getLogger(DepositAccountService::class.java)
 
     override fun createDepositAccount(dto: DepositAccountDto): DepositAccount {
-        if(dto.owner.passportID.isEmpty()
-            || dto.owner.passportID.isBlank()
-            || dto.owner.passportID.length == 1){
+        if (dto.owner.passportID.isEmpty() || dto.owner.passportID.isBlank()) {
             log.warn("passport id is null")
-            throw IllegalArgumentException("passport id is null")
+
+            transactionService.registerFailedTransaction(
+                amount = dto.balance,
+                fromAccount = DepositAccount(),//todo не очень хорошо, потому что потом говно в отчетах может полезть
+                //либо бд будет ругаться на отсутствие этой записи
+                toAccount = DepositAccount(),
+                transactionType = TransactionType.CREATE
+            )
+            throw IllegalArgumentException("passport id is null")//fixme в случае ошибки это срывает транзакцию -> не сохраняет ошибочные операции
         }
 
         log.info("creating deposit account with data: $dto")
 
         val depositAccount = DepositAccountMapper.toEntity(dto)
-
         val owner: Client = clientService.saveOrGet(dto.owner)
         depositAccount.owner = owner
 
-        return depositAccountRepository.save(depositAccount)
+        val savedDepositAccount = depositAccountRepository.save(depositAccount)
+
+        transactionService.registerSuccessTransaction(
+            toAccount = savedDepositAccount,
+            fromAccount = savedDepositAccount,
+            amount = dto.balance,
+            transactionType = TransactionType.CREATE
+        )
+        return savedDepositAccount
     }
 
     override fun getDepositAccountByUUID(uuid: UUID): DepositAccount {
@@ -76,13 +87,19 @@ class DepositAccountService(
         account.balance = account.balance.add(amount)
 
         val result = depositAccountRepository.save(account)
-        log.info("Successfully add money to account ${account.id}")
+        log.info("Successfully add money to account ${account.uuid}")
+        transactionService.registerSuccessTransaction(
+            fromAccount = account,
+            toAccount = account,
+            amount = amount,
+            transactionType = TransactionType.DEPOSITING
+        )
 
         return result
     }
 
     @Throws(ObjectNotExistException::class, NotEnoughMoneyException::class)
-    override fun transferMoney(operationDto: OperationDto){
+    override fun transferMoney(operationDto: OperationDto) {
         validateOperationDto(dto = operationDto)
         requireNotNull(operationDto.toAccount)//плохо, а че вы хотели, будет время -- сделаю лучше
 
@@ -90,57 +107,68 @@ class DepositAccountService(
         val toAccount = getDepositAccountByUUID(operationDto.toAccount)
         val amount = operationDto.amount
 
-        if(fromAccount.moneyType != toAccount.moneyType){
+        if (fromAccount.moneyType != toAccount.moneyType) {
+            transactionService.registerFailedTransaction(
+                fromAccount = fromAccount,
+                toAccount = toAccount,
+                amount = amount,
+                transactionType = TransactionType.TRANSFER
+            )
             throw MoneyTypeException("Валюты счетов не совпадают")
         }
 
-        if(fromAccount.balance.minus(amount) < BigDecimal.ZERO){
+        if (fromAccount.balance.minus(amount) < BigDecimal.ZERO) {
+            transactionService.registerFailedTransaction(
+                fromAccount = fromAccount,
+                toAccount = toAccount,
+                amount = amount,
+                transactionType = TransactionType.TRANSFER
+            )
             throw NotEnoughMoneyException("Недостаточно средств на счете")
         }
 
         fromAccount.balance = fromAccount.balance.minus(amount)
         toAccount.balance = toAccount.balance.add(amount)
 
-        depositAccountRepository.save(fromAccount)
-        depositAccountRepository.save(toAccount)
+        val updatedFromAccount = depositAccountRepository.save(fromAccount)
+        val updatedToAccount = depositAccountRepository.save(toAccount)
 
+        transactionService.registerSuccessTransaction(
+            fromAccount = updatedFromAccount,
+            toAccount = updatedToAccount,
+            amount = amount,
+            transactionType = TransactionType.TRANSFER
+        )
     }
 
-    override fun withdrawMoney(operationDto: OperationDto) : DepositAccount {
+    override fun withdrawMoney(operationDto: OperationDto): DepositAccount {
         validateOperationDto(dto = operationDto)
 
         val account = getDepositAccountByUUID(operationDto.fromAccount)
         val amount = operationDto.amount
 
-        if(account.balance.minus(amount) < BigDecimal.ZERO){
+        if (account.balance.minus(amount) < BigDecimal.ZERO) {
+            transactionService.registerFailedTransaction(
+                fromAccount = account,
+                toAccount = account,
+                amount = amount,
+                transactionType = TransactionType.WITHDRAW
+            )
             throw NotEnoughMoneyException("Недостаточно средств на счете")
         }
 
         account.balance = account.balance.minus(amount)
 
         val result = depositAccountRepository.save(account)
-        log.info("Successfully withdraw money from account ${account.id}")
-
+        log.info("Successfully withdraw money from account ${account.uuid}")
+        transactionService.registerSuccessTransaction(
+            fromAccount = account,
+            toAccount = account,
+            amount = amount,
+            transactionType = TransactionType.WITHDRAW
+        )
         return result
     }
-
-
-    private fun createTransaction(fromAccount: DepositAccount,
-                                  toAccount: DepositAccount,
-                                  amount: BigDecimal,
-                                  transactionType: TransactionType): Transaction {
-        val transaction = Transaction()
-
-        transaction.amount = amount
-        transaction.toAccount = fromAccount
-        transaction.fromAccount = toAccount
-        transaction.transactionStatus = TransactionStatus.PENDING
-        transaction.transactionType = transactionType
-
-
-        return transaction
-    }
-
 
     private fun validateOperationDto(dto: OperationDto) {
         require(dto.amount > BigDecimal.ZERO)

@@ -11,7 +11,7 @@ class DepositAccount {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    lateinit var id: UUID
+    lateinit var uuid: UUID
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(nullable = false)

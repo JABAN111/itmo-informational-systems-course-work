@@ -14,14 +14,14 @@ class TransactionMapper {
     companion object {
         fun toEntity(dto: TransactionDto): Transaction {
             //todo здесь явно не все проверки
-            require(dto.amount > BigDecimal.ZERO) { "Transaction amount must be greater than 0" }
+            require(dto.amount >= BigDecimal.ZERO) { "Transaction amount must be greater than 0" }
             require(dto.transactionStatus.isNotBlank()) { "Transaction status must not be blank" }
-            require(dto.transactionType.isNotBlank()) { "Transaction type must not be blank" }
+//            require(dto.transactionType.isNotBlank()) { "Transaction type must not be blank" }
 //        require(dto.accountId != null) { "Account ID must not be null" }
 
             val transaction = Transaction()
-            transaction.fromAccount = DepositAccountMapper.toEntity(dto.fromAccountDto)
-            transaction.toAccount = DepositAccountMapper.toEntity(dto.toAccountDto)
+            transaction.fromAccount = dto.fromAccountDto?.let { DepositAccountMapper.toEntity(it) }
+            transaction.toAccount = dto.toAccountDto?.let { DepositAccountMapper.toEntity(it) }
             transaction.amount = dto.amount
             transaction.transactionStatus = try {
                 TransactionStatus.valueOf(dto.transactionStatus)
@@ -29,7 +29,7 @@ class TransactionMapper {
                 TODO("реализовать свою обертку ошибок")
             }
             transaction.transactionType = try {
-                TransactionType.valueOf(dto.transactionType)
+                dto.transactionType?.let { TransactionType.valueOf(it) }
             } catch (e: IllegalArgumentException) {
                 TODO("реализовать свою обертку ошибок")
             }

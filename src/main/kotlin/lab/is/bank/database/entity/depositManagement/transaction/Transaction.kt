@@ -9,7 +9,7 @@ import java.util.*
 class Transaction {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    var id: UUID? = null
+    var uuid: UUID? = null
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(nullable = false)

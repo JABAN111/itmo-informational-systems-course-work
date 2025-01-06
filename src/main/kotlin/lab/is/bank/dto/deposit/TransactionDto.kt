@@ -4,10 +4,10 @@ import java.math.BigDecimal
 import java.util.*
 
 data class TransactionDto(
-    val fromAccountDto: DepositAccountDto,
-    val toAccountDto: DepositAccountDto,
+    val fromAccountDto: DepositAccountDto? = null,
+    val toAccountDto: DepositAccountDto? = null,
     val amount: BigDecimal,
-    val transactionStatus: String,
-    val transactionType: String,
-    val transactionDate: Date,
+    var transactionStatus: String = "FAILED",
+    val transactionType: String? = null,
+    val transactionDate: Date = Date()
 )

@@ -1,11 +1,13 @@
 package lab.`is`.bank.services.depositManagement.impl
 
+import jakarta.persistence.Tuple
 import jakarta.transaction.Transactional
 import lab.`is`.bank.database.entity.depositManagement.DepositAccount
 import lab.`is`.bank.database.entity.depositManagement.transaction.Transaction
 import lab.`is`.bank.database.entity.depositManagement.transaction.TransactionStatus
 import lab.`is`.bank.database.entity.depositManagement.transaction.TransactionType
 import lab.`is`.bank.database.repository.depositManagement.transaction.TransactionRepository
+import lab.`is`.bank.dto.DepositExportData
 import lab.`is`.bank.dto.deposit.TransactionDto
 import lab.`is`.bank.mapper.deposit.TransactionMapper
 import lab.`is`.bank.services.depositManagement.interfaces.TransactionService
@@ -86,4 +88,20 @@ class TransactionServiceImpl(
             ObjectNotExistException("Транзакция не найдена")//fatal error btw
         }
     }
+
+    override fun getDataForExport(accountId: UUID, types: Array<String>): List<DepositExportData> {
+        val data: List<Tuple> = transactionRepository.getDataForReport(accountId, types)
+        val result = mutableListOf<DepositExportData>();
+        for (tuple in data) {
+            val dto = DepositExportData(
+                moneyType = tuple.get(0).toString(),
+                accountID = tuple.get(1) as UUID,
+                transactionAmount = BigDecimal(tuple.get(2).toString()),
+                transactionCreate = tuple.get(3).toString()
+            )
+            result.add(dto)
+        }
+        return result
+    }
+
 }

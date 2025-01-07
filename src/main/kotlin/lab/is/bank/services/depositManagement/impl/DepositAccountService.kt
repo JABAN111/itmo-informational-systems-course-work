@@ -87,7 +87,7 @@ class DepositAccountService(
         account.balance = account.balance.add(amount)
 
         val result = depositAccountRepository.save(account)
-        log.info("Successfully add money to account ${account.uuid}")
+        log.info("Successfully add money to account ${account.id}")
         transactionService.registerSuccessTransaction(
             fromAccount = account,
             toAccount = account,
@@ -160,7 +160,7 @@ class DepositAccountService(
         account.balance = account.balance.minus(amount)
 
         val result = depositAccountRepository.save(account)
-        log.info("Successfully withdraw money from account ${account.uuid}")
+        log.info("Successfully withdraw money from account ${account.id}")
         transactionService.registerSuccessTransaction(
             fromAccount = account,
             toAccount = account,

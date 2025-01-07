@@ -4,6 +4,7 @@ import lab.`is`.bank.database.entity.depositManagement.DepositAccount
 import lab.`is`.bank.database.entity.depositManagement.transaction.Transaction
 import lab.`is`.bank.database.entity.depositManagement.transaction.TransactionStatus
 import lab.`is`.bank.database.entity.depositManagement.transaction.TransactionType
+import lab.`is`.bank.dto.DepositExportData
 import lab.`is`.bank.dto.deposit.TransactionDto
 import java.math.BigDecimal
 import java.util.UUID
@@ -39,4 +40,5 @@ interface TransactionService {
 
 
     fun getTransaction(uuid: UUID) : Transaction
+    fun getDataForExport(accountId: UUID, types: Array<String>) : List<DepositExportData>
 }

@@ -25,6 +25,7 @@ spring:
     show-sql: true
 
     hibernate:
+#      ddl-auto: update
       ddl-auto: create-drop
 
 server:
@@ -44,6 +45,7 @@ jwt:
     converter:
       resource-id: spring-boot
       principle-attribute: preferred_username
+
 #token:
 #  signing:
 #    key: Q5v1CXQ1Y64cayU84BnlR3Az9fVFe8Bvn6Mrf68bX5U=

@@ -1,0 +1,134 @@
+@startuml
+entity Users {
+    + user_id : UUID <<PK>>
+    --
+    username : VARCHAR
+    email : VARCHAR
+    password : VARCHAR
+    created_at : TIMESTAMP
+    updated_at : TIMESTAMP
+}
+
+entity Money_Type {
+    + money_type_id : UUID <<PK>>
+    --
+    name : VARCHAR
+}
+
+entity Deposit_Accounts {
+    + account_id : UUID <<PK>>
+    --
+    user_id : UUID <<FK>>
+    money_type_id : UUID <<FK>>
+    balance : DECIMAL
+    created_at : TIMESTAMP
+    updated_at : TIMESTAMP
+}
+
+entity Transactions {
+    + transaction_id : UUID <<PK>>
+    --
+    account_id : UUID <<FK>>
+    amount : DECIMAL
+    transaction_type_id : UUID <<FK>>
+    transaction_status_id : UUID <<FK>>
+    transaction_date : TIMESTAMP
+}
+
+entity Transaction_Status {
+    + transaction_status_id UUID <<PK>>
+    --
+    status_name: VARCHAR
+}
+
+entity Transaction_Type {
+    + transaction_type_id : UUID <<PK>>
+    --
+    name : VARCHAR
+}
+
+entity Artifacts {
+    + artifact_id : UUID <<PK>>
+    --
+    name : VARCHAR
+    magical_properties : UUID <<FK>>
+    current_user_id : UUID <<FK>>
+    history_id : UUID <<FK>>
+    created_at : TIMESTAMP
+}
+
+entity Artifact_History {
+    + artifact_history_id : UUID <<PK>>
+    --
+    change_description : TEXT
+    last_user : UUID <<FK>>
+    change_date : TIMESTAMP
+}
+
+entity Magical_Properties{
+    + magical_properties_id : UUID <<PK>>
+    --
+    description : TEXT
+    danger_level : VARCHAR
+}
+
+entity Artifact_Storage {
+    + artifact_storage_id : UUID <<PK>>
+    --
+    artifact_id : UUID <<FK>>
+    last_update: TIMESTAMP
+}
+
+entity Keys {
+    + key_id : UUID <<PK>>
+    --
+    artifact_storage_id : UUID <<FK>>
+    user_id : UUID <<FK>>
+    key_token : VARCHAR
+    issued_at : TIMESTAMP
+    expires_at : TIMESTAMP
+}
+
+entity Roles {
+    + role_id : UUID <<PK>>
+    --
+    role_name : VARCHAR
+    description : TEXT
+}
+
+entity Permissions {
+    + permission_id : UUID <<PK>>
+    --
+    permission_name : VARCHAR
+    description : TEXT
+}
+
+entity User_Roles {
+    + user_role_id : UUID <<PK>>
+    --
+    user_id : UUID <<FK>>
+    role_id : UUID <<FK>>
+}
+
+entity Role_Permissions {
+    + role_permission_id : UUID <<PK>>
+    --
+    role_id : UUID <<FK>>
+    permission_id : UUID <<FK>>
+}
+
+Users ||--o{ Deposit_Accounts
+Users ||--o{ User_Roles
+Users ||--o{ Artifacts
+Users ||--o{ Keys
+Deposit_Accounts ||--o{ Transactions
+Transactions ||--o{ Transaction_Type
+Transactions ||--o{ Transaction_Status
+Deposit_Accounts ||--o{ Money_Type
+Artifacts ||--o{ Artifact_Storage
+Artifacts ||--o{ Magical_Properties
+Artifacts ||--o{ Artifact_History
+Roles ||--o{ User_Roles
+Permissions ||--o{ Role_Permissions
+Roles ||--o{ Role_Permissions
+@enduml

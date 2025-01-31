@@ -11,7 +11,5 @@ class Client {
     @Id
     lateinit var passportID: String
 
-//    @Column(unique = true, nullable = false)
-//    lateinit var email: String
 
 }

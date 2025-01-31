@@ -1,6 +1,7 @@
 package lab.`is`.bank.database.entity.depositManagement.transaction
 
 import jakarta.persistence.*
+import lab.`is`.bank.database.entity.Staff
 import lab.`is`.bank.database.entity.depositManagement.DepositAccount
 import java.math.BigDecimal
 import java.util.*
@@ -32,6 +33,9 @@ class Transaction {
 
     var transactionDate: Date? = null
 
+
+    @ManyToOne
+    var transaction: Staff? = null
 
     @PrePersist
     fun creationDate(){

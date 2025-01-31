@@ -5,7 +5,7 @@ import lab.`is`.bank.dto.ClientDto
 
 class ClientMapper {
 
-    companion object{
+    companion object {
 
         fun toEntity(dto: ClientDto): Client {
 //            require(dto.email.isNotBlank()) { "Username must not be blank" }
@@ -17,5 +17,12 @@ class ClientMapper {
             return client
         }
 
+
+        fun toDto(entity: Client): ClientDto {
+            val dto = ClientDto(
+                passportID = entity.passportID
+            )
+            return dto
+        }
     }
 }

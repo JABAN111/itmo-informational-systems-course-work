@@ -39,10 +39,18 @@ services:
     volumes:
       - keycloak_data:/opt/keycloak/data/
       - ./keycloak-theme/keycloakify-starter/dist_keycloak/keycloak-theme-for-kc-all-other-versions.jar:/opt/keycloak/providers/keycloak-theme-for-kc-all-other-versions.jar
+      - ./realm-export.json:/opt/keycloak/data/import/realm-export.json
+
     ports:
       - "8282:8080"
     depends_on:
       - keycloak-postgres
 
+  ai:
+    build:
+      context: /Users/jaba/Documents/life/ITMO/IS/курсач/front-back/back/gringots/AI
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
 volumes:
   keycloak_data:

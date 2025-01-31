@@ -1,0 +1,35 @@
+@startuml
+actor "Пользователь" as User
+
+package "Авторизация" {
+    [Keycloak]
+}
+
+package "Приложение" {
+    [Spring]
+    [База данных]
+}
+
+package "Сервисы" {
+    [AI-fast-api]
+    [База знаний]
+}
+
+User -> [Keycloak] : Вход в систему
+[Keycloak] --> User : Токен авторизации
+
+User -> [Spring] : req/resp
+[Spring] -> [Keycloak] : Проверка токена
+[Keycloak] --> [Spring] : Подтверждение токена
+
+[Spring] -> [AI-fast-api] : Запрос на выполнение AI-задачи
+[AI-fast-api] --> [Spring] : Результат выполнения задачи
+
+[Spring] -> [База данных] : Чтение/запись данных
+[База данных] --> [Spring] : Ответ с данными
+
+[AI-fast-api] -> [База знаний] : Запрос знаний
+[База знаний] --> [AI-fast-api] : Результат запроса
+
+[Spring] --> User : req/resp
+@enduml

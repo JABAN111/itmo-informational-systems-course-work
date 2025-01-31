@@ -1,19 +1,16 @@
-package lab.`is`.bank.database.entity
-
-
+package lab.`is`.bank.database.entity.artifact
 
 import jakarta.persistence.Entity
 import jakarta.persistence.GeneratedValue
 import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
-import java.util.*
+import java.util.UUID
 
 @Entity
-class ArtifactStorage {
+class MagicalProperty {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    lateinit var id : UUID
+    lateinit var uuid: UUID
 
-    lateinit var name : String
-
+    lateinit var dangerLevel: String
 }

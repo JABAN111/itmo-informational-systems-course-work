@@ -133,12 +133,18 @@ class DepositAccountService(
         val updatedFromAccount = depositAccountRepository.save(fromAccount)
         val updatedToAccount = depositAccountRepository.save(toAccount)
 
+
         transactionService.registerSuccessTransaction(
             fromAccount = updatedFromAccount,
             toAccount = updatedToAccount,
             amount = amount,
             transactionType = TransactionType.TRANSFER
         )
+    }
+
+    fun transfer(){
+        depositAccountRepository.transfer("1", "2", 2.1)
+
     }
 
     override fun withdrawMoney(operationDto: OperationDto): DepositAccount {

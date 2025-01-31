@@ -8,14 +8,14 @@ import java.util.*
 class Key {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    lateinit var uuid : UUID
+    lateinit var uuid: UUID
 
     @ManyToOne
     @JoinColumn
     lateinit var artifactStorage: ArtifactStorage
 
     @ManyToOne
-    @JoinColumn(name = "client_passport_id")
+    @JoinColumn(name = "client_passport_id", referencedColumnName = "passportID")
     lateinit var client: Client
 
     lateinit var keyValue: UUID
@@ -26,7 +26,7 @@ class Key {
     @PrePersist
     fun updateIssuedAt() {
         issuedAt = Date()
-        expiresAt = Date(issuedAt.time + 1000*60*60*24)
+        expiresAt = Date(issuedAt.time + 1000 * 60 * 60 * 24)
     }
 }
 

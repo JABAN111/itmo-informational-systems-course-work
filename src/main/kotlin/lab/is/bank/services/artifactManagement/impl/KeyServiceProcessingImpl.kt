@@ -56,6 +56,7 @@ class KeyServiceProcessingImpl(
             throw DangerousArtifactException("Artifact is too dangerous! Level of danger: $lvl")
         }
         val currentClientEntity = clientService.saveOrGet(ClientDto(clientPassport))
+        artifactDto.artifactHistory?.clientsHistory?.add(currentClientEntity)
 
         val clientDto = ClientMapper.toDto(currentClientEntity)
         em.flush()
@@ -73,18 +74,12 @@ class KeyServiceProcessingImpl(
             artifactHistoryDto.lastClient = clientDto
         }
 
-        if(magicalPropertyDto != null) {
+        if (magicalPropertyDto != null) {
             magicalPropertyRepository.save(MagicalPropertiesMapper.toEntity(magicalPropertyDto))
         }
 
         val historyToSave = artifactHistoryDto?.let { ArtifactHistoryMapper.toEntity(it) }
-        if (historyToSave != null) {
-//            historyToSave.clientsHistory = currentClientEntity
-        }
-        val savedHistory: ArtifactHistory
-//        if (historyToSave != null) {
-        savedHistory = historyToSave?.let { artifactHistoryRepository.save(it) }!!
-//        }
+        val savedHistory: ArtifactHistory = historyToSave?.let { artifactHistoryRepository.save(it) }!!
 
         val artifact = artifactService.save(artifactDto)
         em.flush()
@@ -127,13 +122,11 @@ class KeyServiceProcessingImpl(
                 content.newLineAtOffset(0f, -20f)
                 content.showText("Expires At: ${key.expiresAt}")
                 content.endText()
-            } // Закрываем content перед вставкой изображения
+            }
 
-            // Генерация QR-кода
             val qrImage = generateQRCodeImage(key.keyValue.toString())
             val qrXObject = LosslessFactory.createFromImage(document, qrImage)
 
-            // Создаем новый content stream для изображения
             PDPageContentStream(document, page).use { content ->
                 content.drawImage(qrXObject, 100f, 500f, 150f, 150f)
             }
@@ -142,6 +135,10 @@ class KeyServiceProcessingImpl(
             document.save(outputStream)
             return outputStream.toByteArray()
         }
+    }
+
+    override fun getAllKeys(clientDto: ClientDto): List<Key>{
+        return keyRepository.findByClient(ClientMapper.toEntity(clientDto))
     }
 
     private fun generateQRCodeImage(text: String): BufferedImage {

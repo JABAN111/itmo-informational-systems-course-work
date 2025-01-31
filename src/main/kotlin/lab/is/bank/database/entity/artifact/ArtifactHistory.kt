@@ -22,6 +22,8 @@ class ArtifactHistory {
 
     var changeDate: Timestamp = Timestamp(System.currentTimeMillis())
 
+    lateinit var reasonToSave: String
+
     @PreUpdate
     fun updateChangeDate() {
         changeDate = Timestamp(System.currentTimeMillis())

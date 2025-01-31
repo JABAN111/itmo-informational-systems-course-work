@@ -13,7 +13,8 @@ data class ArtifactDto(
 
 data class ArtifactHistoryDto(
     var lastClient: ClientDto? = null,
-    var clientsHistory: MutableList<ClientDto> = mutableListOf()
+    var clientsHistory: MutableList<Client> = mutableListOf(),
+    var reasonToSave: String = "",
 )
 
 data class MagicalPropertyDto(

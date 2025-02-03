@@ -5,6 +5,8 @@ import com.google.api.client.http.GenericUrl
 import com.google.api.client.http.HttpRequest
 import com.google.api.client.http.HttpResponse
 import com.google.api.client.http.javanet.NetHttpTransport
+import com.google.api.client.http.json.JsonHttpContent
+import com.google.api.client.json.gson.GsonFactory
 import lab.`is`.bank.dto.artifact.ArtifactDto
 import lab.`is`.bank.dto.artifact.MagicalPropertyDto
 import lab.`is`.bank.services.artifactManagement.interfaces.ArtifactValidationService
@@ -12,7 +14,7 @@ import org.springframework.stereotype.Service
 import java.io.InputStreamReader
 
 @Service
-class ArtifactValidationService(
+class ArtifactValidationServiceImpl(
     private val httpTransport: NetHttpTransport = NetHttpTransport(),
     private val objectMapper: ObjectMapper = ObjectMapper()
 ) : ArtifactValidationService {
@@ -21,15 +23,20 @@ class ArtifactValidationService(
     private val IS_SAVABLE = "$AI_SERVER/validate-save"
     private val DANGER_LVL = "$AI_SERVER/level-of-danger"
     private val GET_ALL = "$AI_SERVER/get-all"
-    private val GET_ALL_LVL = "$AI_SERVER/get-all/lvl"
+    private val GET_ALL_LVL = "$AI_SERVER/get-all"
+    private val DESCRIPTION_VALIDATION = "$AI_SERVER/description-validation"
+    private val BAN_USER = "$AI_SERVER/add-ban-user"
+    private val BAN_WORD = "$AI_SERVER/add-ban-word"
 
-    override fun validateArtifact(artifactName: String): Boolean {
+    override fun validateArtifact(artifactName: String, userAccountName: String): Boolean {
         val url = GenericUrl(IS_SAVABLE)
-        val content = mapOf("user_input" to artifactName)
+        val content = mapOf(
+            "user_input" to artifactName,
+            "user_account_name" to userAccountName
+        )
 
         val req: HttpRequest = httpTransport.createRequestFactory()
-            .buildPostRequest(url, com.google.api.client.http.json.JsonHttpContent(
-                com.google.api.client.json.gson.GsonFactory.getDefaultInstance(), content))
+            .buildPostRequest(url, JsonHttpContent(GsonFactory.getDefaultInstance(), content))
 
         val response: HttpResponse = req.execute()
         val responseText = response.parseAsString()
@@ -42,8 +49,7 @@ class ArtifactValidationService(
         val content = mapOf("user_input" to artifactName)
 
         val req: HttpRequest = httpTransport.createRequestFactory()
-            .buildPostRequest(url, com.google.api.client.http.json.JsonHttpContent(
-                com.google.api.client.json.gson.GsonFactory.getDefaultInstance(), content))
+            .buildPostRequest(url, JsonHttpContent(GsonFactory.getDefaultInstance(), content))
 
         val response: HttpResponse = req.execute()
         val responseText = response.parseAsString()
@@ -93,6 +99,44 @@ class ArtifactValidationService(
 
         return objectMapper.readValue(responseBody, objectMapper.typeFactory.constructCollectionType(List::class.java, ArtifactDto::class.java))
     }
+
+    override fun validateDescription(reasonToSave: String): Boolean {
+        val url = GenericUrl(DESCRIPTION_VALIDATION)
+        val content = mapOf("reason_to_save" to reasonToSave)
+
+        val req: HttpRequest = httpTransport.createRequestFactory()
+            .buildPostRequest(url, JsonHttpContent(GsonFactory.getDefaultInstance(), content))
+
+        val response: HttpResponse = req.execute()
+        val responseText = response.parseAsString()
+        response.disconnect()
+        return responseText.toBoolean()
+    }
+
+    override fun addBannedUser(userAccountName: String): Boolean {
+        val url = GenericUrl(BAN_USER)
+        val content = mapOf("user_account_name" to userAccountName)
+
+        val req: HttpRequest = httpTransport.createRequestFactory()
+            .buildPostRequest(url, JsonHttpContent(GsonFactory.getDefaultInstance(), content))
+
+        val response: HttpResponse = req.execute()
+        response.disconnect()
+        return response.statusCode == 200
+    }
+
+    override fun addBannedWord(word: String): Boolean {
+        val url = GenericUrl(BAN_WORD)
+        val content = mapOf("user_input" to word)
+
+        val req: HttpRequest = httpTransport.createRequestFactory()
+            .buildPostRequest(url, JsonHttpContent(GsonFactory.getDefaultInstance(), content))
+
+        val response: HttpResponse = req.execute()
+        response.disconnect()
+        return response.statusCode == 200
+    }
+
 
     /**
      * Локальный класс для удобного маппинга данных с сервера

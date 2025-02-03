@@ -1,7 +1,3 @@
 package lab.`is`.bank.dto
 
-data class ClientDto(
-    val passportID: String,
-) {
-    constructor() : this("")
-}
+data class ClientDto(val passportID: String)

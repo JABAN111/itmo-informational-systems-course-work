@@ -9,7 +9,7 @@ class KeyMapper {
         fun toEntity(dto: KeyDto): Key {
             val key = Key()
             key.artifactStorage = ArtifactStorageMapper.toEntity(dto.artifactStorage)
-            key.keyValue = dto.keyValue
+            key.jwtToken = dto.keyValue
             key.client = ClientMapper.toEntity(dto.client)
 
             return key

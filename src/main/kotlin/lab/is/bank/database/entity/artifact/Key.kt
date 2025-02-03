@@ -18,7 +18,7 @@ class Key {
     @JoinColumn(name = "client_passport_id", referencedColumnName = "passportID")
     lateinit var client: Client
 
-    lateinit var keyValue: UUID
+    lateinit var jwtToken: String
 
     lateinit var issuedAt: Date
     lateinit var expiresAt: Date

@@ -3,7 +3,6 @@ package lab.`is`.bank.controller.artifact
 import lab.`is`.bank.database.entity.artifact.Key
 import lab.`is`.bank.dto.ClientDto
 import lab.`is`.bank.dto.artifact.ArtifactDto
-import lab.`is`.bank.dto.artifact.ArtifactHistoryDto
 import lab.`is`.bank.services.artifactManagement.interfaces.ArtifactValidationService
 import lab.`is`.bank.services.artifactManagement.interfaces.KeyServiceProcessing
 import org.springframework.http.ResponseEntity
@@ -19,25 +18,9 @@ import org.springframework.http.MediaType
 @RequestMapping("/api/v0/artifact")
 @RestController
 class ArtifactController(
-    private val artService: ArtifactValidationService,
     private val keyServiceProcessing: KeyServiceProcessing,
-    private val artifactValidationService: ArtifactValidationService
+    private val artifactValidationServiceImpl: lab.`is`.bank.services.artifactManagement.impl.ArtifactValidationServiceImpl,
 ) {
-
-    @GetMapping("/test")
-    fun req() {
-        val check = ArtifactDto(
-            name = "invisibility_cloak",
-            currentClient = ClientDto("21"),
-            artifactHistory = ArtifactHistoryDto(
-                ClientDto("21"),
-            ),
-        )
-
-        println(artService.validateArtifact("invisibility_cloak"))
-        println(keyServiceProcessing.getKey(check, "21"))
-    }
-
     @PostMapping("/get-key")
     fun createKey(@RequestBody artifactDto: ArtifactDto): ResponseEntity<ByteArray> {
         val key = keyServiceProcessing.getKey(artifactDto, artifactDto.currentClient!!.passportID)
@@ -57,9 +40,10 @@ class ArtifactController(
         return keyServiceProcessing.getAllKeys(clientDto)
     }
 
-    @GetMapping("/testall")
-    fun getAll(): List<ArtifactDto> {
-        return artifactValidationService.getAllArtifact()
+    @GetMapping("/reference")
+    fun getReference(): List<ArtifactDto> {
+        val got = artifactValidationServiceImpl.getAllArtifact()
+        return got
     }
 
 }

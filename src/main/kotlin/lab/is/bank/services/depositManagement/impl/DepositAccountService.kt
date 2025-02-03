@@ -101,7 +101,7 @@ class DepositAccountService(
     @Throws(ObjectNotExistException::class, NotEnoughMoneyException::class)
     override fun transferMoney(operationDto: OperationDto) {
         validateOperationDto(dto = operationDto)
-        requireNotNull(operationDto.toAccount)//плохо, а че вы хотели, будет время -- сделаю лучше
+        requireNotNull(operationDto.toAccount)
 
         val fromAccount = getDepositAccountByUUID(operationDto.fromAccount)
         val toAccount = getDepositAccountByUUID(operationDto.toAccount)
@@ -117,35 +117,28 @@ class DepositAccountService(
             throw MoneyTypeException("Валюты счетов не совпадают")
         }
 
-        if (fromAccount.balance.minus(amount) < BigDecimal.ZERO) {
+        // Вызываем метод репозитория для перевода средств
+        val transferStatus = depositAccountRepository.transfer(fromAccount.id, toAccount.id, amount)
+
+        // Проверяем статус перевода и регистрируем транзакцию в зависимости от результата
+        if (transferStatus == "SUCCEEDED") {
+            transactionService.registerSuccessTransaction(
+                fromAccount = fromAccount,
+                toAccount = toAccount,
+                amount = amount,
+                transactionType = TransactionType.TRANSFER
+            )
+        } else {
             transactionService.registerFailedTransaction(
                 fromAccount = fromAccount,
                 toAccount = toAccount,
                 amount = amount,
                 transactionType = TransactionType.TRANSFER
             )
-            throw NotEnoughMoneyException("Недостаточно средств на счете")
+            throw RuntimeException("Ошибка перевода: $transferStatus")
         }
-
-        fromAccount.balance = fromAccount.balance.minus(amount)
-        toAccount.balance = toAccount.balance.add(amount)
-
-        val updatedFromAccount = depositAccountRepository.save(fromAccount)
-        val updatedToAccount = depositAccountRepository.save(toAccount)
-
-
-        transactionService.registerSuccessTransaction(
-            fromAccount = updatedFromAccount,
-            toAccount = updatedToAccount,
-            amount = amount,
-            transactionType = TransactionType.TRANSFER
-        )
     }
 
-    fun transfer(){
-        depositAccountRepository.transfer("1", "2", 2.1)
-
-    }
 
     override fun withdrawMoney(operationDto: OperationDto): DepositAccount {
         validateOperationDto(dto = operationDto)

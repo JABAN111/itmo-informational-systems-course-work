@@ -8,7 +8,7 @@ interface ExportDepositService {
     fun exportDepositsPdf(accountId: UUID, operations: Array<String>) : ByteArray
 }
 interface ExportArtifactService {
-    fun exportArtifactsXLSX(artifactId: UUID) : ByteArray
-    fun exportArtifactsCSV(artifactId: UUID) : ByteArray
-    fun exportArtifactsPdf(artifactId: UUID) : ByteArray
+    fun exportArtifactsXLSX(someOwner: String?, someMagicProperty: List<String>?) : ByteArray
+    fun exportArtifactsCSV(someOwner: String?, someMagicProperty: List<String>?) : ByteArray
+    fun exportArtifactsPdf(someOwner: String?, someMagicProperty: List<String>?) : ByteArray
 }

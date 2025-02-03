@@ -6,7 +6,6 @@ import com.google.zxing.common.BitMatrix
 import com.google.zxing.qrcode.QRCodeWriter
 import jakarta.persistence.EntityManager
 import jakarta.transaction.Transactional
-import lab.`is`.bank.database.entity.artifact.ArtifactHistory
 import lab.`is`.bank.database.entity.artifact.Key
 import lab.`is`.bank.database.repository.artifactManagement.ArtifactHistoryRepository
 import lab.`is`.bank.database.repository.artifactManagement.ArtifactStorageRepository
@@ -21,7 +20,7 @@ import lab.`is`.bank.mapper.artifact.ArtifactHistoryMapper
 import lab.`is`.bank.mapper.artifact.ArtifactStorageMapper
 import lab.`is`.bank.mapper.artifact.KeyMapper
 import lab.`is`.bank.mapper.artifact.MagicalPropertiesMapper
-import lab.`is`.bank.services.artifactManagement.DangerousArtifactException
+import lab.`is`.bank.services.exception.ArtifactExceptions
 import lab.`is`.bank.services.artifactManagement.interfaces.ArtifactService
 import lab.`is`.bank.services.artifactManagement.interfaces.KeyServiceProcessing
 import lab.`is`.bank.services.auth.interfaces.ClientService
@@ -35,6 +34,12 @@ import java.awt.Color
 import java.awt.image.BufferedImage
 import java.io.ByteArrayOutputStream
 import java.util.*
+import io.jsonwebtoken.Jwts
+import io.jsonwebtoken.SignatureAlgorithm
+import io.jsonwebtoken.security.Keys
+import lab.`is`.bank.services.exception.UsedBanWord
+import lab.`is`.bank.services.artifactManagement.interfaces.ArtifactValidationService
+import javax.crypto.SecretKey
 
 @Service
 @Transactional
@@ -48,38 +53,43 @@ class KeyServiceProcessingImpl(
     private val artifactHistoryRepository: ArtifactHistoryRepository,//fixme заменить на сервис
     private val magicalPropertyRepository: MagicalPropertyRepository,//fixme заменить на сервис
 ) : KeyServiceProcessing {
+    private val secretKey: SecretKey = Keys.secretKeyFor(SignatureAlgorithm.HS256)
 
     override fun getKey(artifactDto: ArtifactDto, clientPassport: String): Key {
         val lvl: String = artifactValidationService.levelOfDanger(artifactDto.name)
+        val reasonToSave: String? = artifactDto.artifactHistory?.reasonToSave
 
-        if (!artifactValidationService.validateArtifact(artifactDto.name)) {
-            throw DangerousArtifactException("Artifact is too dangerous! Level of danger: $lvl")
+        if (!artifactValidationService.validateArtifact(artifactDto.name, clientPassport)) {
+            throw ArtifactExceptions("Artifact is too dangerous! Level of danger: $lvl or user $clientPassport banned")
         }
+        if(reasonToSave != null && !artifactValidationService.validateDescription(reasonToSave)) {//случай, если пользователь закинул банворд
+            artifactValidationService.addBannedUser(clientPassport)
+            throw UsedBanWord("User used ban word")
+        }
+
         val currentClientEntity = clientService.saveOrGet(ClientDto(clientPassport))
         artifactDto.artifactHistory?.clientsHistory?.add(currentClientEntity)
 
         val clientDto = ClientMapper.toDto(currentClientEntity)
         em.flush()
         val storage = ArtifactStorageDto(artifact = artifactDto)
+
+        val jwtToken = generateJwtToken(artifactDto.name, clientPassport)
+
         val keyDto = KeyDto(
             artifactStorage = storage,
             client = clientDto,
-            keyValue = UUID.randomUUID()
+            keyValue = jwtToken,
         )
+
         val artifactDto = keyDto.artifactStorage.artifact
         val artifactHistoryDto = artifactDto.artifactHistory
         val magicalPropertyDto = artifactDto.magicalProperty
 
-        if (artifactHistoryDto != null) {
-            artifactHistoryDto.lastClient = clientDto
-        }
+        artifactHistoryDto?.lastClient = clientDto
+        magicalPropertyDto?.let { magicalPropertyRepository.save(MagicalPropertiesMapper.toEntity(it)) }
 
-        if (magicalPropertyDto != null) {
-            magicalPropertyRepository.save(MagicalPropertiesMapper.toEntity(magicalPropertyDto))
-        }
-
-        val historyToSave = artifactHistoryDto?.let { ArtifactHistoryMapper.toEntity(it) }
-        val savedHistory: ArtifactHistory = historyToSave?.let { artifactHistoryRepository.save(it) }!!
+        val savedHistory = artifactHistoryDto?.let { artifactHistoryRepository.save(ArtifactHistoryMapper.toEntity(it)) }!!
 
         val artifact = artifactService.save(artifactDto)
         em.flush()
@@ -94,8 +104,56 @@ class KeyServiceProcessingImpl(
         keyToSave.artifactStorage = savedStorage
         keyToSave.client = currentClientEntity
         val savedKey = keyRepository.save(keyToSave)
+
         return savedKey
     }
+//    override fun getKey(artifactDto: ArtifactDto, clientPassport: String): Key {
+//        val lvl: String = artifactValidationService.levelOfDanger(artifactDto.name)
+//
+//        if (!artifactValidationService.validateArtifact(artifactDto.name)) {
+//            throw DangerousArtifactException("Artifact is too dangerous! Level of danger: $lvl")
+//        }
+//        val currentClientEntity = clientService.saveOrGet(ClientDto(clientPassport))
+//        artifactDto.artifactHistory?.clientsHistory?.add(currentClientEntity)
+//
+//        val clientDto = ClientMapper.toDto(currentClientEntity)
+//        em.flush()
+//        val storage = ArtifactStorageDto(artifact = artifactDto)
+//        val keyDto = KeyDto(
+//            artifactStorage = storage,
+//            client = clientDto,
+//            keyValue = UUID.randomUUID()
+//        )
+//        val artifactDto = keyDto.artifactStorage.artifact
+//        val artifactHistoryDto = artifactDto.artifactHistory
+//        val magicalPropertyDto = artifactDto.magicalProperty
+//
+//        if (artifactHistoryDto != null) {
+//            artifactHistoryDto.lastClient = clientDto
+//        }
+//
+//        if (magicalPropertyDto != null) {
+//            magicalPropertyRepository.save(MagicalPropertiesMapper.toEntity(magicalPropertyDto))
+//        }
+//
+//        val historyToSave = artifactHistoryDto?.let { ArtifactHistoryMapper.toEntity(it) }
+//        val savedHistory: ArtifactHistory = historyToSave?.let { artifactHistoryRepository.save(it) }!!
+//
+//        val artifact = artifactService.save(artifactDto)
+//        em.flush()
+//
+//        val savedStorage = ArtifactStorageMapper.toEntity(storage)
+//        savedStorage.artifact = artifact
+//        artifactStorageRepository.save(savedStorage)
+//        em.flush()
+//
+//        val keyToSave = KeyMapper.toEntity(keyDto)
+//        savedStorage.artifact.history = savedHistory
+//        keyToSave.artifactStorage = savedStorage
+//        keyToSave.client = currentClientEntity
+//        val savedKey = keyRepository.save(keyToSave)
+//        return savedKey
+//    }
 
 
     override fun generatePdfKey(key: Key): ByteArray {
@@ -116,7 +174,7 @@ class KeyServiceProcessingImpl(
                 content.newLineAtOffset(0f, -20f)
                 content.showText("Danger Level: ${key.artifactStorage.artifact.magicalProperty?.dangerLevel}")
                 content.newLineAtOffset(0f, -20f)
-                content.showText("Key Value: ${key.keyValue}")
+                content.showText("Key Value: ${key.jwtToken}")
                 content.newLineAtOffset(0f, -20f)
                 content.showText("Issued At: ${key.issuedAt}")
                 content.newLineAtOffset(0f, -20f)
@@ -124,7 +182,7 @@ class KeyServiceProcessingImpl(
                 content.endText()
             }
 
-            val qrImage = generateQRCodeImage(key.keyValue.toString())
+            val qrImage = generateQRCodeImage(key.jwtToken)
             val qrXObject = LosslessFactory.createFromImage(document, qrImage)
 
             PDPageContentStream(document, page).use { content ->
@@ -137,7 +195,7 @@ class KeyServiceProcessingImpl(
         }
     }
 
-    override fun getAllKeys(clientDto: ClientDto): List<Key>{
+    override fun getAllKeys(clientDto: ClientDto): List<Key> {
         return keyRepository.findByClient(ClientMapper.toEntity(clientDto))
     }
 
@@ -156,4 +214,17 @@ class KeyServiceProcessingImpl(
         }
         return image
     }
+
+    private fun generateJwtToken(artifactName: String, clientPassport: String): String {
+        val result = Jwts.builder()
+            .setSubject("ArtifactKey")
+            .claim("artifact", artifactName)
+            .claim("owner", clientPassport)
+            .setIssuedAt(Date())
+            .setExpiration(Date(System.currentTimeMillis() + 24 * 60 * 60 * 1000)) // 24 часа
+            .signWith(secretKey)
+            .compact()
+        return result
+    }
+
 }

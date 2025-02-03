@@ -1,10 +1,8 @@
 package lab.`is`.bank.controller.export
 
-import jakarta.persistence.Tuple
-import lab.`is`.bank.database.repository.depositManagement.transaction.TransactionRepository
-import lab.`is`.bank.services.depositManagement.impl.TransactionServiceImpl
+import lab.`is`.bank.services.auth.impl.StaffServiceImpl
+import lab.`is`.bank.services.export.ExportArtifactService
 import lab.`is`.bank.services.export.ExportDepositService
-import lab.`is`.bank.services.export.impl.ExportDepositServiceImpl
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -18,7 +16,9 @@ import java.util.*
 @RestController
 @RequestMapping("/api/v0/export/deposit")
 class ExportDepositController(
-    private val exportDepositService: ExportDepositService
+    private val exportDepositService: ExportDepositService,
+    private val staffService: StaffServiceImpl,
+    private val exportArtifactService: ExportArtifactService
 ) {
 
 
@@ -80,4 +80,16 @@ class ExportDepositController(
 
         return ResponseEntity(data, headers, HttpStatus.OK)
     }
+
+
+    @GetMapping("/test")
+    fun getCurrentUserInfo(): String {
+        TODO("дамы и господа, тут не реализовано")
+        val currentUser = staffService.getCurrentUser()
+        return "Current user: ${currentUser.staff_name}, UUID: ${currentUser.uuid}"
+    }
+
+
+
+
 }

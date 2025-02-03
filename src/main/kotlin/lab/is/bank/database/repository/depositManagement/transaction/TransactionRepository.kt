@@ -3,7 +3,6 @@ package lab.`is`.bank.database.repository.depositManagement.transaction
 import jakarta.persistence.SqlResultSetMapping
 import jakarta.persistence.Tuple
 import lab.`is`.bank.database.entity.depositManagement.transaction.Transaction
-import lab.`is`.bank.dto.DepositExportData
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Query
 import org.springframework.data.repository.query.Param

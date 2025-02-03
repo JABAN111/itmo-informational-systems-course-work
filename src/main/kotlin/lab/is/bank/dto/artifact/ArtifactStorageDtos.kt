@@ -28,5 +28,5 @@ data class ArtifactStorageDto(
 data class KeyDto(
     val artifactStorage: ArtifactStorageDto,
     val client: ClientDto,
-    val keyValue: UUID,
+    val keyValue: String,
 )

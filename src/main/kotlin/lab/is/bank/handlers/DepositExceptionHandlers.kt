@@ -3,6 +3,7 @@ package lab.`is`.bank.handlers
 import lab.`is`.bank.services.depositManagement.exception.MoneyTypeException
 import lab.`is`.bank.services.depositManagement.exception.NotEnoughMoney
 import lab.`is`.bank.services.depositManagement.exception.NotEnoughMoneyException
+import lab.`is`.bank.services.depositManagement.exception.TransferFailed
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestControllerAdvice
@@ -28,4 +29,9 @@ class DepositExceptionHandlers {
         return "Not enough money to finish   transaction. Details: ${exception.message}"
     }
 
+    @ExceptionHandler(TransferFailed::class)
+    @ResponseStatus
+    fun transferFailedExceptionHandler(exception: TransferFailed): String {
+        return "Transfer failed. Details: ${exception.message}"
+    }
 }

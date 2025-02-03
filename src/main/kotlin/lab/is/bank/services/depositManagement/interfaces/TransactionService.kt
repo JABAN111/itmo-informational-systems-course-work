@@ -1,5 +1,6 @@
 package lab.`is`.bank.services.depositManagement.interfaces
 
+import jakarta.transaction.Transactional
 import lab.`is`.bank.database.entity.depositManagement.DepositAccount
 import lab.`is`.bank.database.entity.depositManagement.transaction.Transaction
 import lab.`is`.bank.database.entity.depositManagement.transaction.TransactionStatus
@@ -14,7 +15,6 @@ interface TransactionService {
 
     fun registerTransaction(dto: TransactionDto) : Transaction
     fun registerTransaction(transaction: Transaction) : Transaction
-
 
     fun registerSuccessTransaction(
         fromAccount: DepositAccount,

@@ -15,4 +15,15 @@ class UnpredictableExceptionHandlers {
         return "Argument type mismatch exception has been occurred: ${e.message}"
     }
 
+    @ExceptionHandler(IllegalArgumentException::class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    fun illegalArgumentException(e: IllegalArgumentException): String {
+        return "Argument type mismatch exception has been occurred: ${e.message}"
+    }
+
+    @ExceptionHandler(RuntimeException::class)
+    @ResponseStatus
+    fun runtimeException(e: RuntimeException): String {
+        return "Unpredictable exception has been handled: ${e.message}"
+    }
 }

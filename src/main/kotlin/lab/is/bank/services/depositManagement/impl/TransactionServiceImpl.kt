@@ -1,7 +1,6 @@
 package lab.`is`.bank.services.depositManagement.impl
 
 import jakarta.persistence.Tuple
-import jakarta.transaction.Transactional
 import lab.`is`.bank.database.entity.depositManagement.DepositAccount
 import lab.`is`.bank.database.entity.depositManagement.transaction.Transaction
 import lab.`is`.bank.database.entity.depositManagement.transaction.TransactionStatus
@@ -9,6 +8,8 @@ import lab.`is`.bank.database.entity.depositManagement.transaction.TransactionTy
 import lab.`is`.bank.database.repository.depositManagement.transaction.TransactionRepository
 import lab.`is`.bank.dto.DepositExportData
 import lab.`is`.bank.dto.deposit.TransactionDto
+import org.springframework.transaction.annotation.Propagation
+import org.springframework.transaction.annotation.Transactional
 import lab.`is`.bank.mapper.deposit.TransactionMapper
 import lab.`is`.bank.services.depositManagement.interfaces.TransactionService
 import lab.`is`.bank.services.exception.ObjectNotExistException
@@ -18,36 +19,19 @@ import java.math.BigDecimal
 import java.util.UUID
 
 @Service
-@Transactional
 class TransactionServiceImpl(
     private val transactionRepository: TransactionRepository
 ) : TransactionService {
 
     private val log = LoggerFactory.getLogger(TransactionServiceImpl::class.java)
+
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     override fun registerTransaction(dto: TransactionDto): Transaction {
         val transaction = TransactionMapper.toEntity(dto)
         return transactionRepository.save(transaction)
     }
-
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     override fun registerTransaction(transaction: Transaction) : Transaction{
-        return transactionRepository.save(transaction)
-    }
-
-
-
-    override fun registerTransaction(
-        fromAccount: DepositAccount,
-        toAccount: DepositAccount,
-        amount: BigDecimal,
-        transactionStatus: TransactionStatus,
-        transactionType: TransactionType
-    ): Transaction {
-        val transaction = Transaction()
-        transaction.fromAccount = fromAccount
-        transaction.toAccount = toAccount
-        transaction.amount = amount
-        transaction.transactionStatus = transactionStatus
-        transaction.transactionType = transactionType
         return transactionRepository.save(transaction)
     }
 
@@ -62,21 +46,6 @@ class TransactionServiceImpl(
             toAccount,
             amount,
             TransactionStatus.SUCCEEDED,
-            transactionType
-        )
-    }
-
-    override fun registerFailedTransaction(
-        fromAccount: DepositAccount,
-        toAccount: DepositAccount,
-        amount: BigDecimal,
-        transactionType: TransactionType
-    ): Transaction {
-        return registerTransaction(
-            fromAccount,
-            toAccount,
-            amount,
-            TransactionStatus.FAILED,
             transactionType
         )
     }
@@ -104,4 +73,37 @@ class TransactionServiceImpl(
         return result
     }
 
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    override fun registerFailedTransaction(
+        fromAccount: DepositAccount,
+        toAccount: DepositAccount,
+        amount: BigDecimal,
+        transactionType: TransactionType
+    ): Transaction {
+        log.warn("Регистрация неудачной транзакции: from=${fromAccount.id}, to=${toAccount.id}, amount=$amount")
+        return registerTransaction(
+            fromAccount,
+            toAccount,
+            amount,
+            TransactionStatus.FAILED,
+            transactionType
+        )
+    }
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    override fun registerTransaction(
+        fromAccount: DepositAccount,
+        toAccount: DepositAccount,
+        amount: BigDecimal,
+        transactionStatus: TransactionStatus,
+        transactionType: TransactionType
+    ): Transaction {
+        val transaction = Transaction().apply {
+            this.fromAccount = fromAccount
+            this.toAccount = toAccount
+            this.amount = amount
+            this.transactionStatus = transactionStatus
+            this.transactionType = transactionType
+        }
+        return transactionRepository.save(transaction)
+    }
 }

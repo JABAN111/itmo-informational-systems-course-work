@@ -1,5 +1,6 @@
 package lab.`is`.bank.services.depositManagement.impl
 
+import jakarta.persistence.EntityManager
 import lab.`is`.bank.database.entity.Client
 import lab.`is`.bank.database.entity.depositManagement.DepositAccount
 import lab.`is`.bank.database.entity.depositManagement.transaction.TransactionType
@@ -29,7 +30,8 @@ import kotlin.Throws
 class DepositAccountService(
     private val depositAccountRepository: DepositAccountRepository,
     private val clientService: ClientService,
-    private val transactionService: TransactionService
+    private val transactionService: TransactionService,
+    private val em: EntityManager
 ) : DepositService {
 
     private val log: Logger = LoggerFactory.getLogger(DepositAccountService::class.java)
@@ -40,12 +42,11 @@ class DepositAccountService(
 
             transactionService.registerFailedTransaction(
                 amount = dto.balance,
-                fromAccount = DepositAccount(),//todo не очень хорошо, потому что потом говно в отчетах может полезть
-                //либо бд будет ругаться на отсутствие этой записи
+                fromAccount = DepositAccount(),
                 toAccount = DepositAccount(),
                 transactionType = TransactionType.CREATE
             )
-            throw IllegalArgumentException("passport id is null")//fixme в случае ошибки это срывает транзакцию -> не сохраняет ошибочные операции
+            throw IllegalArgumentException("passport id is null")
         }
 
         log.info("creating deposit account with data: $dto")
@@ -55,7 +56,7 @@ class DepositAccountService(
         depositAccount.owner = owner
 
         val savedDepositAccount = depositAccountRepository.save(depositAccount)
-
+        em.flush()
         transactionService.registerSuccessTransaction(
             toAccount = savedDepositAccount,
             fromAccount = savedDepositAccount,
@@ -83,7 +84,15 @@ class DepositAccountService(
 
         val account = getDepositAccountByUUID(operationDto.fromAccount)
         val amount = operationDto.amount
-
+        if (amount < BigDecimal.ZERO) {
+            transactionService.registerFailedTransaction(
+                amount = amount,
+                fromAccount = account,
+                toAccount = account,
+                transactionType = TransactionType.DEPOSITING
+            )
+            throw NotEnoughMoneyException("Negative amount of money cannot be saved")
+        }
         account.balance = account.balance.add(amount)
 
         val result = depositAccountRepository.save(account)
@@ -117,10 +126,8 @@ class DepositAccountService(
             throw MoneyTypeException("Валюты счетов не совпадают")
         }
 
-        // Вызываем метод репозитория для перевода средств
         val transferStatus = depositAccountRepository.transfer(fromAccount.id, toAccount.id, amount)
 
-        // Проверяем статус перевода и регистрируем транзакцию в зависимости от результата
         if (transferStatus == "SUCCEEDED") {
             transactionService.registerSuccessTransaction(
                 fromAccount = fromAccount,

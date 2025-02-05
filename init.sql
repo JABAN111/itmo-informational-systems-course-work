@@ -1,3 +1,10 @@
+CREATE INDEX idx_artifact_in_storage ON artifact_storage (uuid, artifact_uuid);
+
+
+CREATE INDEX idx_magical_properties ON magical_property (danger_level);
+
+CREATE INDEX idx_accounts_user ON deposit_account (owner_passportid, money_type, balance DESC);
+
 create function get_account_transactions_multiple_types(acc_id uuid, transaction_types text[])
     returns TABLE(moneytype text, accountid uuid, transactionamount numeric, transactiontype text)
     language plpgsql
@@ -61,3 +68,59 @@ END;
 $$;
 
 ALTER FUNCTION get_filtered_artifacts(TEXT, TEXT[]) OWNER TO "user";
+
+
+
+CREATE OR REPLACE FUNCTION transfer_deposit_accounts(
+    from_account_id UUID,
+    to_account_id UUID,
+    transfer_amount NUMERIC,
+    OUT transfer_status TEXT
+)
+    RETURNS TEXT LANGUAGE plpgsql AS $$
+DECLARE
+    from_balance NUMERIC;
+    to_balance NUMERIC;
+    from_money_type TEXT;
+    to_money_type TEXT;
+BEGIN
+    SELECT balance, money_type INTO from_balance, from_money_type
+    FROM deposit_account
+    WHERE id = from_account_id;
+
+    IF from_balance IS NULL THEN
+        transfer_status := 'FAILED';
+        RETURN;
+    END IF;
+
+    SELECT balance, money_type INTO to_balance, to_money_type
+    FROM deposit_account
+    WHERE id = to_account_id;
+
+    IF to_balance IS NULL THEN
+        transfer_status := 'FAILED';
+        RETURN;
+    END IF;
+
+    IF from_money_type != to_money_type THEN
+        transfer_status := 'FAILED';
+        RETURN;
+    END IF;
+
+    IF from_balance < transfer_amount THEN
+        transfer_status := 'FAILED';
+        RETURN;
+    END IF;
+
+    UPDATE deposit_account
+    SET balance = balance - transfer_amount
+    WHERE id = from_account_id;
+
+    UPDATE deposit_account
+    SET balance = balance + transfer_amount
+    WHERE id = to_account_id;
+
+    transfer_status := 'SUCCEEDED';
+    RETURN;
+END;
+$$;

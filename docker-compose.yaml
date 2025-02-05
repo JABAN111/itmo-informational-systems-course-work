@@ -1,3 +1,4 @@
+
 services:
   postgres:
     image: postgres:13.3
@@ -7,6 +8,28 @@ services:
       POSTGRES_PASSWORD: "user"
     ports:
       - "5444:5432"
+    networks:
+      - gringots_network
+
+  postgres-backup:
+    image: postgres:13.3
+    environment:
+      POSTGRES_USER: "user"
+      POSTGRES_PASSWORD: "user"
+      POSTGRES_DB: "course"
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+      - pg_backups:/backups
+    entrypoint: >
+      bash -c "while true; do
+        PGPASSWORD=user pg_dump -h postgres -p 5432 -U user -d course -F c -b -v -f /backups/course_backup_$(date +\%Y-\%m-\%d_\%H-\%M-\%S).dump;
+        sleep 90000;
+      done"
+    restart: unless-stopped
+    depends_on:
+      - postgres
+    networks:
+      - gringots_network
 
   keycloak-postgres:
     image: library/postgres:${KC_POSTGRES_IMAGE_TAG:-14}
@@ -22,6 +45,8 @@ services:
       resources:
         limits:
           memory: 256M
+    networks:
+      - gringots_network
 
   keycloak:
     image: quay.io/keycloak/keycloak:20.0.2
@@ -40,11 +65,12 @@ services:
       - keycloak_data:/opt/keycloak/data/
       - ./keycloak-theme/keycloakify-starter/dist_keycloak/keycloak-theme-for-kc-all-other-versions.jar:/opt/keycloak/providers/keycloak-theme-for-kc-all-other-versions.jar
       - ./realm-export.json:/opt/keycloak/data/import/realm-export.json
-
     ports:
       - "8282:8080"
     depends_on:
       - keycloak-postgres
+    networks:
+      - gringots_network
 
   ai:
     build:
@@ -52,5 +78,62 @@ services:
       dockerfile: Dockerfile
     ports:
       - "8000:8000"
+    networks:
+      - gringots_network
+
+  postgres-exporter:
+    image: prometheuscommunity/postgres-exporter
+    environment:
+      DATA_SOURCE_NAME: "postgresql://user:user@postgres:5432/course?sslmode=disable"
+    ports:
+      - "9187:9187"
+    depends_on:
+      - postgres
+    networks:
+      - gringots_network
+
+  keycloak-postgres-exporter:
+    image: prometheuscommunity/postgres-exporter
+    environment:
+      DATA_SOURCE_NAME: "postgresql://admin:admin@keycloak-postgres:5432/psql_keycloak?sslmode=disable"
+    ports:
+      - "9188:9187"
+    depends_on:
+      - keycloak-postgres
+    networks:
+      - gringots_network
+
+  prometheus:
+    image: prom/prometheus
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+    ports:
+      - "9090:9090"
+    depends_on:
+      - postgres-exporter
+      - keycloak-postgres-exporter
+    networks:
+      - gringots_network
+
+  grafana:
+    image: grafana/grafana
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana_data:/var/lib/grafana
+    depends_on:
+      - prometheus
+    networks:
+      - gringots_network
+
 volumes:
   keycloak_data:
+  pg_data:
+  pg_backups:
+  grafana_data:
+
+networks:
+  gringots_network:
+    driver: bridge

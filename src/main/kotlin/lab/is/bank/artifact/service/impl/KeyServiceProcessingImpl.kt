@@ -39,6 +39,8 @@ import io.jsonwebtoken.SignatureAlgorithm
 import io.jsonwebtoken.security.Keys
 import lab.`is`.bank.artifact.service.exceptions.UsedBanWord
 import lab.`is`.bank.artifact.service.interfaces.ArtifactValidationService
+import lab.`is`.bank.authorization.mapper.StaffMapper
+import lab.`is`.bank.security.AuthUtilsService
 import javax.crypto.SecretKey
 
 @Service
@@ -49,6 +51,7 @@ class KeyServiceProcessingImpl(
     private val keyRepository: KeyRepository,
     private val em: EntityManager,
     private val artifactService: ArtifactService,
+    private val authUtilsService: AuthUtilsService,
     private val artifactStorageRepository: ArtifactStorageRepository,//fixme заменить на сервис
     private val artifactHistoryRepository: ArtifactHistoryRepository,//fixme заменить на сервис
     private val magicalPropertyRepository: MagicalPropertyRepository,//fixme заменить на сервис
@@ -76,10 +79,13 @@ class KeyServiceProcessingImpl(
 
         val jwtToken = generateJwtToken(artifactDto.name, clientPassport)
 
+        val currentStaff = authUtilsService.getCurrentStaff()
+
         val keyDto = KeyDto(
             artifactStorage = storage,
             client = clientDto,
             keyValue = jwtToken,
+            giver = StaffMapper.toDto(staff = currentStaff)
         )
 
         val artifactDto = keyDto.artifactStorage.artifact

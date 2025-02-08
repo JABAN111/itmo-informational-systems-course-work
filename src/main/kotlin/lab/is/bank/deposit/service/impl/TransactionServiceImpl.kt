@@ -54,7 +54,7 @@ class TransactionServiceImpl(
     override fun getTransaction(uuid: UUID): Transaction {
         return transactionRepository.findById(uuid).orElseThrow {
             log.error("cannot find the transaction by uuid: $uuid")
-            ObjectNotExistException("Транзакция не найдена")//fatal error btw
+            ObjectNotExistException("Transaction with uuid: $uuid not found")
         }
     }
 

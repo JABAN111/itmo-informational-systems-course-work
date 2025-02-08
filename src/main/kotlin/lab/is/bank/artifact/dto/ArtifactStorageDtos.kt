@@ -2,6 +2,7 @@ package lab.`is`.bank.artifact.dto
 
 import lab.`is`.bank.authorization.database.entity.Client
 import lab.`is`.bank.authorization.dto.ClientDto
+import lab.`is`.bank.authorization.dto.StaffDto
 import java.sql.Timestamp
 import java.util.*
 
@@ -30,6 +31,7 @@ data class KeyDto(
     val artifactStorage: ArtifactStorageDto,
     val client: ClientDto,
     val keyValue: String,
+    val giver: StaffDto
 )
 
 data class ArtifactExportData(

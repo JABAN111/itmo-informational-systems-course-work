@@ -2,6 +2,7 @@ package lab.`is`.bank.artifact.database.entity
 
 import jakarta.persistence.*
 import lab.`is`.bank.authorization.database.entity.Client
+import lab.`is`.bank.authorization.database.entity.Staff
 import java.util.*
 
 @Entity
@@ -22,6 +23,9 @@ class Key {
 
     lateinit var issuedAt: Date
     lateinit var expiresAt: Date
+
+    @OneToOne
+    lateinit var giver: Staff
 
     @PrePersist
     fun updateIssuedAt() {

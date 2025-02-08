@@ -24,6 +24,7 @@ class UnpredictableExceptionHandlers {
     @ExceptionHandler(RuntimeException::class)
     @ResponseStatus
     fun runtimeException(e: RuntimeException): String {
+        e.printStackTrace()
         return "Unpredictable exception has been handled: ${e.message}"
     }
 }

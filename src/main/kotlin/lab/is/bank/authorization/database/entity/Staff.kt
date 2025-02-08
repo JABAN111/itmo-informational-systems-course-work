@@ -1,13 +1,10 @@
 package lab.`is`.bank.authorization.database.entity
 
-import jakarta.persistence.Entity
-import jakarta.persistence.Id
+import jakarta.persistence.*
 import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.core.authority.SimpleGrantedAuthority
 import org.springframework.security.core.userdetails.UserDetails
 import java.util.UUID
-import jakarta.persistence.EnumType
-import jakarta.persistence.Enumerated
 
 /**
  *
@@ -16,11 +13,9 @@ import jakarta.persistence.Enumerated
 
 @Entity
 class Staff : UserDetails {
-
     @Id
-    lateinit var uuid: UUID
-
-    lateinit var staff_name: String
+    @Column(nullable = false, unique = true)
+    lateinit var staffName: String
 
     @Enumerated(EnumType.STRING)
     var role: StaffRole? = null
@@ -34,7 +29,7 @@ class Staff : UserDetails {
     }
 
     override fun getUsername(): String {
-        return staff_name
+        return staffName
     }
 
     override fun isAccountNonExpired(): Boolean {

@@ -1,51 +1,94 @@
 package lab.`is`.bank.security
 
+import lab.`is`.bank.authorization.service.interfaces.StaffService
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.security.authentication.AuthenticationManager
+import org.springframework.security.authentication.AuthenticationProvider
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
 import org.springframework.security.config.http.SessionCreationPolicy
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
+import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.security.web.SecurityFilterChain
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter
 import org.springframework.web.cors.CorsConfiguration
-import org.springframework.web.servlet.config.annotation.CorsRegistry
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurer
 
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
-class SecurityConfig : WebMvcConfigurer {
+class SecurityConfig(
+    private val staffService: StaffService,
+    private val jwtAuthFilter: JwtAuthenticationFilter // ⬅️ Должен быть фильтр, а не конвертер
+) {
 
-    @Throws(Exception::class)
     @Bean
     fun securityFilterChain(http: HttpSecurity): SecurityFilterChain {
-        http.csrf { obj -> obj.disable() }
+        http
+            .csrf { it.disable() }
             .cors { cors ->
-                cors.configurationSource { request ->
-                    val corsConfiguration = CorsConfiguration()
-                    corsConfiguration.allowedOriginPatterns = listOf("*")
-                    corsConfiguration.allowedMethods = listOf("GET", "POST", "PATCH", "PUT", "DELETE", "OPTIONS")
-                    corsConfiguration.allowedHeaders = listOf("*")
-                    corsConfiguration.allowCredentials = true
-                    corsConfiguration
+                cors.configurationSource {
+                    CorsConfiguration().apply {
+                        allowedOriginPatterns = listOf("*")
+                        allowedMethods = listOf("GET", "POST", "PATCH", "PUT", "DELETE", "OPTIONS")
+                        allowedHeaders = listOf("*")
+                        allowCredentials = true
+                    }
                 }
             }
+
             .authorizeHttpRequests { request ->
                 request
-                    .anyRequest().permitAll()
+                    .requestMatchers("/registration/register").permitAll()
+                    .anyRequest().authenticated()
             }
-            .sessionManagement { manager ->
-                manager.sessionCreationPolicy(SessionCreationPolicy.STATELESS) // Без сессий
-            }
+            .sessionManagement { it.sessionCreationPolicy(SessionCreationPolicy.STATELESS) }
+            .authenticationProvider(authenticationProvider())
+            .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter::class.java)
 
         return http.build()
     }
+//    @Bean
+//    fun securityFilterChain(http: HttpSecurity): SecurityFilterChain {
+//        http
+//            .csrf { it.disable() }
+//            .cors { cors ->
+//                cors.configurationSource {
+//                    CorsConfiguration().apply {
+//                        allowedOriginPatterns = listOf("*")
+//                        allowedMethods = listOf("GET", "POST", "PATCH", "PUT", "DELETE", "OPTIONS")
+//                        allowedHeaders = listOf("*")
+//                        allowCredentials = true
+//                    }
+//                }
+//            }
+//            .authorizeHttpRequests { request ->
+//                request.anyRequest().permitAll()
+//            }
+//            .sessionManagement { it.sessionCreationPolicy(SessionCreationPolicy.STATELESS) }
+//            .authenticationProvider(authenticationProvider())
+//            .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter::class.java) // ✅ исправлено
+//
+//        return http.build()
+//    }
 
-    override fun addCorsMappings(registry: CorsRegistry) {
-        registry.addMapping("/api/**") // Разрешаем для путей, начинающихся с /api/
-            .allowedOrigins("http://localhost:5174") // Разрешаем только ваш фронтенд
-            .allowedMethods("GET", "POST", "PUT", "DELETE") // Указываем разрешенные методы
-            .allowedHeaders("*") // Разрешаем все заголовки
-            .allowCredentials(true)
+    @Bean
+    fun passwordEncoder(): PasswordEncoder = BCryptPasswordEncoder()
+
+    @Bean
+    fun authenticationProvider(): AuthenticationProvider {
+        return DaoAuthenticationProvider().apply {
+            setUserDetailsService(staffService.getUserDetailsService())
+            setPasswordEncoder(passwordEncoder())
+        }
+    }
+
+    @Bean
+    @Throws(Exception::class)
+    fun authenticationManager(config: AuthenticationConfiguration): AuthenticationManager {
+        return config.authenticationManager
     }
 }

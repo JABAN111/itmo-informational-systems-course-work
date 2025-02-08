@@ -7,6 +7,6 @@ data class DepositExportData(
     val moneyType: String,
     val accountID: UUID,
     val transactionAmount: BigDecimal,
-    val transactionCreate: String
+    val transactionCreate: String,
 )
 

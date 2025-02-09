@@ -9,4 +9,5 @@ interface ArtifactStorageService {
     fun save(artifactStorage: ArtifactStorage): ArtifactStorage
 
     fun getInfo(id: UUID): ArtifactStorage
+    fun getArtifactStorage(id: UUID): ArtifactStorage?
 }

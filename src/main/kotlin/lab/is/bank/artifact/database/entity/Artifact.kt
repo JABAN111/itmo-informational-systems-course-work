@@ -17,10 +17,8 @@ import java.util.*
  */
 @Entity
 class Artifact {
-    @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    lateinit var uuid: UUID
 
+    @Id
     lateinit var name: String
 
     @OneToOne(cascade = [CascadeType.ALL])
@@ -31,9 +29,6 @@ class Artifact {
     @JoinColumn(name = "current_client_passport_id")
     lateinit var currentClient: Client
 
-    @OneToOne(cascade = [CascadeType.ALL])
-    @JoinColumn(name = "history_uuid")
-    lateinit var history: ArtifactHistory
 
     lateinit var createdAt: Date
 

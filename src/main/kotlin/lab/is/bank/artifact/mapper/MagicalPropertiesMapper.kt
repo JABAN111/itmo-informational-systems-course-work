@@ -9,6 +9,7 @@ class MagicalPropertiesMapper {
 
             val magicalProperty = MagicalProperty()
             magicalProperty.dangerLevel = dto.dangerLevel
+            magicalProperty.property = dto.property
 
             return magicalProperty
         }

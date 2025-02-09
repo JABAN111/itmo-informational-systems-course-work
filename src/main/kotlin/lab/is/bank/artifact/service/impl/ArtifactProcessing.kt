@@ -14,7 +14,7 @@ import org.springframework.stereotype.Service
 import java.io.InputStreamReader
 
 @Service
-class ArtifactValidationServiceImpl(
+class AiOperatorService(
     private val httpTransport: NetHttpTransport = NetHttpTransport(),
     private val objectMapper: ObjectMapper = ObjectMapper()
 ) : ArtifactValidationService {
@@ -27,6 +27,23 @@ class ArtifactValidationServiceImpl(
     private val DESCRIPTION_VALIDATION = "$AI_SERVER/description-validation"
     private val BAN_USER = "$AI_SERVER/add-ban-user"
     private val BAN_WORD = "$AI_SERVER/add-ban-word"
+    private val GET_SPECIFIACTION = "$AI_SERVER/get-specification"
+
+    override fun getSpecification(artifactName: String): String {
+        val url = GenericUrl(GET_SPECIFIACTION)
+        val content = mapOf(
+            "user_input" to artifactName
+        )
+
+        val req: HttpRequest = httpTransport.createRequestFactory()
+            .buildPostRequest(url, JsonHttpContent(GsonFactory.getDefaultInstance(), content))
+
+        val response: HttpResponse = req.execute()
+        val responseText = response.parseAsString()
+        response.disconnect()
+
+        return responseText
+    }
 
     override fun validateArtifact(artifactName: String, userAccountName: String): Boolean {
         val url = GenericUrl(IS_SAVABLE)

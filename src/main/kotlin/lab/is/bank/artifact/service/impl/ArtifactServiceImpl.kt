@@ -12,7 +12,6 @@ import lab.`is`.bank.artifact.service.interfaces.ArtifactService
 import org.springframework.stereotype.Service
 import java.sql.Timestamp
 import java.util.*
-import kotlin.NoSuchElementException
 
 
 @Service
@@ -21,27 +20,31 @@ class ArtifactServiceImpl(
     private val artifactRepository: ArtifactRepository
 ) : ArtifactService {
     override fun save(artifact: Artifact): Artifact {
-        if(artifactRepository.findByName(artifact.name) != null) {
+        if (artifactRepository.findByName(artifact.name) != null) {
             throw ArtifactAlreadySaved("Artifact already in storage")
         }
         return artifactRepository.save(artifact)
     }
 
     override fun save(artifactDto: ArtifactDto): Artifact {
-        if(artifactRepository.findByName(artifactDto.name) != null) {
+        if (artifactRepository.findByName(artifactDto.name) != null) {
             throw ArtifactAlreadySaved("Artifact already in storage")
         }
         return save(ArtifactMapper.toEntity(artifactDto))
     }
 
-    override fun getArtifactById(artifactId: UUID): Artifact {
-        return artifactRepository.findByUuid(artifactId)
-            ?: throw NoSuchElementException("Artifact with id $artifactId not found")
+    override fun deleteArtifact(artifactName: String) {
+        artifactRepository.deleteByName(artifactName)
     }
+
 
     override fun getDataForExport(someOwner: String?, someMagicProperty: List<String>?): List<ArtifactExportData> {
         val magicPropertiesString = someMagicProperty?.joinToString(",")
         return mapTuplesToArtifactExportData(artifactRepository.getFilteredArtifacts(someOwner, magicPropertiesString))
+    }
+
+    override fun getArtifact(artifactName: String): Artifact? {
+        return artifactRepository.findByName(artifactName)
     }
 
     private fun mapTuplesToArtifactExportData(tuples: List<Tuple>): List<ArtifactExportData> {

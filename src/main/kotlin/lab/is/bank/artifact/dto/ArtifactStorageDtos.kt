@@ -1,5 +1,6 @@
 package lab.`is`.bank.artifact.dto
 
+import lab.`is`.bank.artifact.database.entity.Artifact
 import lab.`is`.bank.authorization.database.entity.Client
 import lab.`is`.bank.authorization.dto.ClientDto
 import lab.`is`.bank.authorization.dto.StaffDto
@@ -8,19 +9,19 @@ import java.util.*
 
 data class ArtifactDto(
     val name: String,
-    val magicalProperty: MagicalPropertyDto? = null,
-    val currentClient: ClientDto? = null,
-    val artifactHistory: ArtifactHistoryDto? = null,
+    var magicalProperty: MagicalPropertyDto? = null,
+    var currentClient: ClientDto? = null,
 )
 
 data class ArtifactHistoryDto(
-    var lastClient: ClientDto? = null,
     var clientsHistory: MutableList<Client> = mutableListOf(),
     var reasonToSave: String = "",
+    var artifact: ArtifactDto? = null
 )
 
 data class MagicalPropertyDto(
-    val dangerLevel: String = ""
+    val dangerLevel: String = "",
+    var property: String = ""
 )
 
 data class ArtifactStorageDto(

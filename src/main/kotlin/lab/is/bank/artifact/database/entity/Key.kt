@@ -24,7 +24,7 @@ class Key {
     lateinit var issuedAt: Date
     lateinit var expiresAt: Date
 
-    @OneToOne
+    @ManyToOne
     lateinit var giver: Staff
 
     @PrePersist

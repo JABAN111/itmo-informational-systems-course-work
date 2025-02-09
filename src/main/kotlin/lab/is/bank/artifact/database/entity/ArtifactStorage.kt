@@ -9,7 +9,7 @@ class ArtifactStorage {
     @GeneratedValue(strategy = GenerationType.UUID)
     lateinit var uuid : UUID
 
-    @OneToOne
+    @ManyToOne
     @JoinColumn
     lateinit var artifact: Artifact
 }

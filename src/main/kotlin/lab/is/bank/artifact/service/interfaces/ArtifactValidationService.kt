@@ -6,6 +6,7 @@ interface ArtifactValidationService {
 
     fun validateArtifact(artifactName: String, userAccountName: String): Boolean
     fun levelOfDanger(artifactName: String): String
+    fun getSpecification(artifactName: String): String
 
     /**
      * Request for python AI service, return all actual artifact

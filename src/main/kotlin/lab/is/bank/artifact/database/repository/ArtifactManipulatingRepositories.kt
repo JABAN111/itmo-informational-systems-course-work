@@ -20,17 +20,17 @@ interface KeyRepository : JpaRepository<Key, UUID>{
 }
 
 @Repository
-interface ArtifactRepository : JpaRepository<Artifact, UUID> {
-    fun findByUuid(artifactId: UUID): Artifact?
+interface ArtifactRepository : JpaRepository<Artifact, String> {
 
     fun findByName(artifactName: String): Artifact?
+    fun deleteByName(artifactName: String)
 
     @Query(
         """
     SELECT * 
     FROM get_filtered_artifacts(
         :someOwner,
-        STRING_TO_ARRAY(:someMagicProperties, ',') -- Преобразуем строку в массив
+        STRING_TO_ARRAY(:someMagicProperties, ',') 
     )
     """,
         nativeQuery = true
@@ -42,7 +42,9 @@ interface ArtifactRepository : JpaRepository<Artifact, UUID> {
 }
 
 @Repository
-interface ArtifactHistoryRepository : JpaRepository<ArtifactHistory, UUID>
+interface ArtifactHistoryRepository : JpaRepository<ArtifactHistory, UUID>{
+    fun findArtifactHistoriesByArtifact(artifact: Artifact): ArtifactHistory?
+}
 
 @Repository
 interface MagicalPropertyRepository : JpaRepository<MagicalProperty, UUID> {

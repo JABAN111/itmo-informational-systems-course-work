@@ -13,4 +13,6 @@ class MagicalProperty {
     lateinit var uuid: UUID
 
     lateinit var dangerLevel: String
+
+    lateinit var property: String
 }

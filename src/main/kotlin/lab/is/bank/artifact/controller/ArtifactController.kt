@@ -1,10 +1,12 @@
 package lab.`is`.bank.artifact.controller
 
+import lab.`is`.bank.artifact.database.entity.Artifact
 import lab.`is`.bank.artifact.database.entity.Key
 import lab.`is`.bank.authorization.dto.ClientDto
 import lab.`is`.bank.artifact.dto.ArtifactDto
 import lab.`is`.bank.artifact.service.interfaces.ArtifactValidationService
-import lab.`is`.bank.artifact.service.interfaces.KeyServiceProcessing
+import lab.`is`.bank.artifact.service.interfaces.ArtifactKeysServiceProcessing
+import lab.`is`.bank.artifact.service.interfaces.ArtifactService
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PostMapping
@@ -14,6 +16,9 @@ import org.springframework.web.bind.annotation.RestController
 import org.springframework.http.HttpHeaders
 import org.springframework.http.MediaType
 import org.springframework.security.access.prepost.PreAuthorize
+import org.springframework.web.bind.annotation.DeleteMapping
+import org.springframework.web.bind.annotation.PathVariable
+import org.springframework.web.bind.annotation.RequestParam
 
 
 @RequestMapping("/api/v0/artifact")
@@ -21,12 +26,15 @@ import org.springframework.security.access.prepost.PreAuthorize
 @PreAuthorize("hasRole('ROLE_ARTIFACTER')")
 class ArtifactController(
     private val artifactValidationService: ArtifactValidationService,
-    private val keyServiceProcessing: KeyServiceProcessing,
+    private val artifactKeysServiceProcessing: ArtifactKeysServiceProcessing,
+    private val artifactService: ArtifactService,
 ) {
-    @PostMapping("/get-key")
-    fun createKey(@RequestBody artifactDto: ArtifactDto): ResponseEntity<ByteArray> {
-        val key = keyServiceProcessing.getKey(artifactDto, artifactDto.currentClient!!.passportID)
-        val pdfBytes = keyServiceProcessing.generatePdfKey(key)
+    @PostMapping("/get-key/{why}")
+    fun createKey(@RequestBody artifactDto: ArtifactDto,
+                  @PathVariable why: String
+    ): ResponseEntity<ByteArray> {
+        val key = artifactKeysServiceProcessing.getKey(artifactDto, artifactDto.currentClient!!.passportID, why)
+        val pdfBytes = artifactKeysServiceProcessing.generatePdfKey(key)
 
         val headers = HttpHeaders().apply {
             contentType = MediaType.APPLICATION_PDF
@@ -39,12 +47,17 @@ class ArtifactController(
     }
     @PostMapping("/get-all")
     fun getAllKeysData(@RequestBody clientDto: ClientDto): List<Key> {
-        return keyServiceProcessing.getAllKeys(clientDto)
+        return artifactKeysServiceProcessing.getAllKeys(clientDto)
     }
 
     @GetMapping("/reference")
     fun getReference(): List<ArtifactDto> {
         return artifactValidationService.getAllArtifact()
+    }
+
+    @DeleteMapping("/artifact/{artifactName}")
+    fun deleteKey(@PathVariable artifactName: String) {
+        artifactService.deleteArtifact(artifactName)
     }
 
 }

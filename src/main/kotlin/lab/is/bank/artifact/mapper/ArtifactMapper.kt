@@ -9,8 +9,12 @@ class ArtifactMapper {
         fun toEntity(dto: ArtifactDto): Artifact {
             val artifact = Artifact()
             artifact.name = dto.name
-            if(dto.magicalProperty != null)
-                artifact.magicalProperty = MagicalPropertiesMapper.toEntity(dto.magicalProperty)
+
+            val magicalPropertyDto = dto.magicalProperty
+            if (magicalPropertyDto != null) {
+                artifact.magicalProperty = MagicalPropertiesMapper.toEntity(magicalPropertyDto)
+            }
+
             artifact.currentClient = dto.currentClient?.let { ClientMapper.toEntity(it) }!!
 
             return artifact

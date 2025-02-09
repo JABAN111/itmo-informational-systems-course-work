@@ -25,7 +25,7 @@ class Staff : UserDetails {
     }
 
     override fun getPassword(): String {
-        throw UnsupportedOperationException("Пароль должен быть реализован")
+        return staffName
     }
 
     override fun getUsername(): String {

@@ -20,6 +20,10 @@ class ArtifactHistory {
     )
     var clientsHistory: MutableList<Client> = mutableListOf()
 
+    @OneToOne
+    @JoinColumn
+    lateinit var artifact: Artifact
+
     var changeDate: Timestamp = Timestamp(System.currentTimeMillis())
 
     lateinit var reasonToSave: String

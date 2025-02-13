@@ -12,21 +12,13 @@ import java.util.*
 @Service
 @Transactional
 class ArtifactStorageServiceImpl(
-    private val artifactStorageRepository: ArtifactStorageRepository
+    private val artifactStorageRepository: ArtifactStorageRepository,
 ) : ArtifactStorageService {
-    override fun save(dto: ArtifactStorageDto): ArtifactStorage {
-        return save(ArtifactStorageMapper.toEntity(dto))
-    }
+    override fun save(dto: ArtifactStorageDto): ArtifactStorage = save(ArtifactStorageMapper.toEntity(dto))
 
-    override fun save(artifactStorage: ArtifactStorage): ArtifactStorage {
-        return artifactStorageRepository.save(artifactStorage)
-    }
+    override fun save(artifactStorage: ArtifactStorage): ArtifactStorage = artifactStorageRepository.save(artifactStorage)
 
-
-
-    override fun get(id: UUID): ArtifactStorage? {
-        return artifactStorageRepository.findByUuid(id)
-    }
+    override fun get(id: UUID): ArtifactStorage? = artifactStorageRepository.findByUuid(id)
 
     override fun get(artifactName: String): ArtifactStorage? {
         val res = artifactStorageRepository.findByArtifactName(artifactName)
@@ -43,10 +35,5 @@ class ArtifactStorageServiceImpl(
         return null
     }
 
-
-    override fun delete(uuid: UUID) {
-        return artifactStorageRepository.deleteById(uuid)
-    }
-
-
+    override fun delete(uuid: UUID) = artifactStorageRepository.deleteById(uuid)
 }

@@ -7,7 +7,6 @@ import java.util.UUID
 
 @Entity
 class ArtifactHistory {
-
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     lateinit var uuid: UUID
@@ -16,7 +15,7 @@ class ArtifactHistory {
     @JoinTable(
         name = "artifact_history_clients",
         joinColumns = [JoinColumn(name = "artifact_history_id")],
-        inverseJoinColumns = [JoinColumn(name = "client_id")]
+        inverseJoinColumns = [JoinColumn(name = "client_id")],
     )
     var clientsHistory: MutableList<Client> = mutableListOf()
 

@@ -10,28 +10,21 @@ import org.springframework.web.bind.annotation.RestControllerAdvice
 
 @RestControllerAdvice
 class DepositExceptionHandlers {
-
     @ExceptionHandler(MoneyTypeException::class)
     @ResponseStatus
-    fun moneyTypeExceptionHandler(exception: MoneyTypeException): String {
-        return "Money Type Error : ${exception.message}"
-    }
+    fun moneyTypeExceptionHandler(exception: MoneyTypeException): String = "Money Type Error : ${exception.message}"
 
     @ExceptionHandler(NotEnoughMoney::class)
     @ResponseStatus
-    fun notEnoughMoneyExceptionHandler(exception: NotEnoughMoney): String {
-        return "Not enough money to finish transaction. Details: ${exception.message}"
-    }
+    fun notEnoughMoneyExceptionHandler(exception: NotEnoughMoney): String =
+        "Not enough money to finish transaction. Details: ${exception.message}"
 
     @ExceptionHandler(NotEnoughMoneyException::class)
     @ResponseStatus
-    fun notEnoughMoneyExceptionHandler(exception: NotEnoughMoneyException): String {
-        return "Not enough money to finish   transaction. Details: ${exception.message}"
-    }
+    fun notEnoughMoneyExceptionHandler(exception: NotEnoughMoneyException): String =
+        "Not enough money to finish   transaction. Details: ${exception.message}"
 
     @ExceptionHandler(TransferFailed::class)
     @ResponseStatus
-    fun transferFailedExceptionHandler(exception: TransferFailed): String {
-        return "Transfer failed. Details: ${exception.message}"
-    }
+    fun transferFailedExceptionHandler(exception: TransferFailed): String = "Transfer failed. Details: ${exception.message}"
 }

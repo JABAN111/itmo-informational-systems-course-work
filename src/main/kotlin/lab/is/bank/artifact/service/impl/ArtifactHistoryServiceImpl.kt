@@ -14,27 +14,20 @@ import java.util.UUID
 @Transactional
 class ArtifactHistoryServiceImpl(
     private val artifactHistoryRepository: ArtifactHistoryRepository,
-): ArtifactHistoryService {
-    override fun save(artifactHistory: ArtifactHistory): ArtifactHistory {
-        return artifactHistoryRepository.save(artifactHistory)
-    }
+) : ArtifactHistoryService {
+    override fun save(artifactHistory: ArtifactHistory): ArtifactHistory = artifactHistoryRepository.save(artifactHistory)
 
-    override fun save(artifactHistoryDto: ArtifactHistoryDto): ArtifactHistory {
-        return save(ArtifactHistoryMapper.toEntity(artifactHistoryDto))
-    }
+    override fun save(artifactHistoryDto: ArtifactHistoryDto): ArtifactHistory = save(ArtifactHistoryMapper.toEntity(artifactHistoryDto))
 
     override fun delete(artifactName: String) {
         artifactHistoryRepository.deleteByArtifactName(artifactName)
     }
 
-    override fun getArtifactHistory(uuid: UUID): ArtifactHistory? {
-        return artifactHistoryRepository.findById(uuid).let {
+    override fun getArtifactHistory(uuid: UUID): ArtifactHistory? =
+        artifactHistoryRepository.findById(uuid).let {
             if (it.isEmpty) null else it.get()
         }
-    }
 
-    override fun getArtifactHistoryByArtifactName(artifact: Artifact): ArtifactHistory? {
-        return artifactHistoryRepository.findArtifactHistoriesByArtifact(artifact)
-    }
-
+    override fun getArtifactHistoryByArtifactName(artifact: Artifact): ArtifactHistory? =
+        artifactHistoryRepository.findArtifactHistoriesByArtifact(artifact)
 }

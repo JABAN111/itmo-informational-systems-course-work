@@ -33,12 +33,11 @@ class Transaction {
 
     var transactionDate: Date? = null
 
-
     @ManyToOne
     var transaction: Staff? = null
 
     @PrePersist
-    fun creationDate(){
+    fun creationDate() {
         transactionDate = Date()
     }
 }

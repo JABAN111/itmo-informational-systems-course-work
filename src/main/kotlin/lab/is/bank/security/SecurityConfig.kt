@@ -22,9 +22,8 @@ import org.springframework.web.cors.CorsConfiguration
 @EnableMethodSecurity
 class SecurityConfig(
     private val staffService: StaffService,
-    private val jwtAuthFilter: JwtAuthenticationFilter // ⬅️ Должен быть фильтр, а не конвертер
+    private val jwtAuthFilter: JwtAuthenticationFilter,
 ) {
-
     @Bean
     fun securityFilterChain(http: HttpSecurity): SecurityFilterChain {
         http
@@ -38,57 +37,30 @@ class SecurityConfig(
                         allowCredentials = true
                     }
                 }
-            }
-
-            .authorizeHttpRequests { request ->
+            }.authorizeHttpRequests { request ->
                 request
-                    .requestMatchers("/registration/register").permitAll()
-                    .anyRequest().authenticated()
-            }
-            .sessionManagement { it.sessionCreationPolicy(SessionCreationPolicy.STATELESS) }
+                    .requestMatchers("/registration/register")
+                    .permitAll()
+                    .anyRequest()
+                    .authenticated()
+            }.sessionManagement { it.sessionCreationPolicy(SessionCreationPolicy.STATELESS) }
             .authenticationProvider(authenticationProvider())
             .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter::class.java)
 
         return http.build()
     }
-//    @Bean
-//    fun securityFilterChain(http: HttpSecurity): SecurityFilterChain {
-//        http
-//            .csrf { it.disable() }
-//            .cors { cors ->
-//                cors.configurationSource {
-//                    CorsConfiguration().apply {
-//                        allowedOriginPatterns = listOf("*")
-//                        allowedMethods = listOf("GET", "POST", "PATCH", "PUT", "DELETE", "OPTIONS")
-//                        allowedHeaders = listOf("*")
-//                        allowCredentials = true
-//                    }
-//                }
-//            }
-//            .authorizeHttpRequests { request ->
-//                request.anyRequest().permitAll()
-//            }
-//            .sessionManagement { it.sessionCreationPolicy(SessionCreationPolicy.STATELESS) }
-//            .authenticationProvider(authenticationProvider())
-//            .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter::class.java) // ✅ исправлено
-//
-//        return http.build()
-//    }
 
     @Bean
     fun passwordEncoder(): PasswordEncoder = BCryptPasswordEncoder()
 
     @Bean
-    fun authenticationProvider(): AuthenticationProvider {
-        return DaoAuthenticationProvider().apply {
+    fun authenticationProvider(): AuthenticationProvider =
+        DaoAuthenticationProvider().apply {
             setUserDetailsService(staffService.getUserDetailsService())
             setPasswordEncoder(passwordEncoder())
         }
-    }
 
     @Bean
     @Throws(Exception::class)
-    fun authenticationManager(config: AuthenticationConfiguration): AuthenticationManager {
-        return config.authenticationManager
-    }
+    fun authenticationManager(config: AuthenticationConfiguration): AuthenticationManager = config.authenticationManager
 }

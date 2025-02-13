@@ -10,20 +10,18 @@ import java.util.UUID
 
 @Repository
 interface TransactionRepository : JpaRepository<Transaction, UUID> {
-
-        @Query(
-            """
+    @Query(
+        """
         SELECT * 
         FROM get_account_transactions_multiple_types(
             :accountId,
             CAST(:types AS text[])
         )
         """,
-            nativeQuery = true
-        )
-        fun getDataForReport(
-            @Param("accountId") accountId: UUID,
-            @Param("types") types: Array<String>
-        ): List<Tuple>
-
+        nativeQuery = true,
+    )
+    fun getDataForReport(
+        @Param("accountId") accountId: UUID,
+        @Param("types") types: Array<String>,
+    ): List<Tuple>
 }

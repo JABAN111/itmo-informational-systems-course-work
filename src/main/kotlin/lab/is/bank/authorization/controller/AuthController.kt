@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.*
 @RequestMapping("/registration")
 class AuthController(
     private val staffService: StaffService,
-    private val jwtServiceImpl: JwtServiceImpl
+    private val jwtServiceImpl: JwtServiceImpl,
 ) {
     /**
      * Ужасный костыль, по идее его должен был бы заменить какой-нибудь брокер сообщений
@@ -23,7 +23,9 @@ class AuthController(
      *
      */
     @PostMapping("/register")
-    fun register(@RequestHeader("Authorization") token: String): ResponseEntity<String> {
+    fun register(
+        @RequestHeader("Authorization") token: String,
+    ): ResponseEntity<String> {
         val jwt = token.removePrefix("Bearer ")
         val username = jwtServiceImpl.extractUserName(jwt)
         val role = jwtServiceImpl.extractRoles(jwt)

@@ -33,4 +33,3 @@ class Key {
         expiresAt = Date(issuedAt.time + 1000 * 60 * 60 * 24)
     }
 }
-

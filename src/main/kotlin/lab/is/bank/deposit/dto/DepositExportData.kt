@@ -9,4 +9,3 @@ data class DepositExportData(
     val transactionAmount: BigDecimal,
     val transactionCreate: String,
 )
-

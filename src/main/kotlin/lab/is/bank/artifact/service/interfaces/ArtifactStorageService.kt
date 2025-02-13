@@ -6,9 +6,11 @@ import java.util.*
 
 interface ArtifactStorageService {
     fun save(dto: ArtifactStorageDto): ArtifactStorage
+
     fun save(artifactStorage: ArtifactStorage): ArtifactStorage
 
     fun get(id: UUID): ArtifactStorage?
+
     fun get(artifactName: String): ArtifactStorage?
 
     fun delete(uuid: UUID)

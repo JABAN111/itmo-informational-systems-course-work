@@ -9,10 +9,12 @@ import java.util.UUID
 
 @Repository
 interface DepositAccountRepository : JpaRepository<DepositAccount, UUID> {
-
     fun findDepositAccountsByOwnerPassportID(ownerPassportId: String): List<DepositAccount>
 
     @Query(nativeQuery = true, value = "SELECT transfer_deposit_accounts(:fromAccountId, :toAccountId, :amount)")
-    fun transfer(fromAccountId: UUID, toAccountId: UUID, amount: BigDecimal): String
-
+    fun transfer(
+        fromAccountId: UUID,
+        toAccountId: UUID,
+        amount: BigDecimal,
+    ): String
 }

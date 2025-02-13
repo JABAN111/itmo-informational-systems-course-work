@@ -4,29 +4,28 @@ import com.itextpdf.kernel.colors.DeviceGray
 import com.itextpdf.kernel.pdf.PdfDocument
 import com.itextpdf.kernel.pdf.PdfWriter
 import com.itextpdf.layout.Document
-import com.itextpdf.layout.element.Table
 import com.itextpdf.layout.element.Cell
 import com.itextpdf.layout.element.Paragraph
+import com.itextpdf.layout.element.Table
 import com.itextpdf.layout.properties.TextAlignment
 import com.opencsv.CSVWriter
+import lab.`is`.bank.deposit.service.interfaces.ExportDepositService
+import lab.`is`.bank.deposit.service.interfaces.TransactionService
 import org.apache.poi.xssf.usermodel.XSSFWorkbook
-
 import org.springframework.stereotype.Service
 import java.io.ByteArrayOutputStream
 import java.io.OutputStreamWriter
 import java.nio.charset.StandardCharsets
 import java.util.*
 
-import lab.`is`.bank.deposit.service.interfaces.ExportDepositService
-import lab.`is`.bank.deposit.service.interfaces.TransactionService
-
-
 @Service
 class ExportDepositServiceImpl(
-    val transactionService: TransactionService
+    val transactionService: TransactionService,
 ) : ExportDepositService {
-
-    override fun exportDepositsXLSX(accountId: UUID, operations: Array<String>): ByteArray {
+    override fun exportDepositsXLSX(
+        accountId: UUID,
+        operations: Array<String>,
+    ): ByteArray {
         val listData = transactionService.getDataForExport(accountId, operations)
 
         val workbook = XSSFWorkbook()
@@ -55,7 +54,10 @@ class ExportDepositServiceImpl(
         return byteArrayOutputStream.toByteArray()
     }
 
-    override fun exportDepositsCSV(accountId: UUID, operations: Array<String>): ByteArray {
+    override fun exportDepositsCSV(
+        accountId: UUID,
+        operations: Array<String>,
+    ): ByteArray {
         val listData = transactionService.getDataForExport(accountId, operations)
 
         val byteArrayOutputStream = ByteArrayOutputStream()
@@ -70,8 +72,8 @@ class ExportDepositServiceImpl(
                     deposit.moneyType,
                     deposit.accountID.toString(),
                     deposit.transactionAmount.toString(),
-                    deposit.transactionCreate
-                )
+                    deposit.transactionCreate,
+                ),
             )
         }
 
@@ -81,8 +83,10 @@ class ExportDepositServiceImpl(
         return byteArrayOutputStream.toByteArray()
     }
 
-
-    override fun exportDepositsPdf(accountId: UUID, operations: Array<String>): ByteArray {
+    override fun exportDepositsPdf(
+        accountId: UUID,
+        operations: Array<String>,
+    ): ByteArray {
         val listData = transactionService.getDataForExport(accountId, operations)
 
         val byteArrayOutputStream = ByteArrayOutputStream()
@@ -95,9 +99,11 @@ class ExportDepositServiceImpl(
 
         val headers = arrayOf("moneyType", "accountID", "transactionAmount", "transactionCreate")
         headers.forEach { header ->
-            val headerCell = Cell().add(Paragraph(header))
-                .setBold()
-                .setTextAlignment(TextAlignment.CENTER)
+            val headerCell =
+                Cell()
+                    .add(Paragraph(header))
+                    .setBold()
+                    .setTextAlignment(TextAlignment.CENTER)
             table.addHeaderCell(headerCell)
         }
 
@@ -105,16 +111,19 @@ class ExportDepositServiceImpl(
             val isEvenRow = rowIndex % 2 == 0
             val rowColor = if (isEvenRow) DeviceGray(0.9f) else null
 
-            val cells = arrayOf(
-                deposit.moneyType,
-                deposit.accountID.toString(),
-                deposit.transactionAmount.toString(),
-                deposit.transactionCreate
-            )
+            val cells =
+                arrayOf(
+                    deposit.moneyType,
+                    deposit.accountID.toString(),
+                    deposit.transactionAmount.toString(),
+                    deposit.transactionCreate,
+                )
 
             cells.forEach { cellValue ->
-                val cell = Cell().add(Paragraph(cellValue))
-                    .setTextAlignment(TextAlignment.CENTER)
+                val cell =
+                    Cell()
+                        .add(Paragraph(cellValue))
+                        .setTextAlignment(TextAlignment.CENTER)
                 rowColor?.let { cell.setBackgroundColor(it) }
                 table.addCell(cell)
             }

@@ -5,7 +5,7 @@ import lab.`is`.bank.artifact.dto.ArtifactDto
 import lab.`is`.bank.authorization.mapper.ClientMapper
 
 class ArtifactMapper {
-    companion object{
+    companion object {
         fun toEntity(dto: ArtifactDto): Artifact {
             val artifact = Artifact()
             artifact.name = dto.name

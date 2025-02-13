@@ -7,7 +7,7 @@ import java.util.*
 class ArtifactStorage {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    lateinit var uuid : UUID
+    lateinit var uuid: UUID
 
     @ManyToOne
     @JoinColumn

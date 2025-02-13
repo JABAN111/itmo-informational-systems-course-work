@@ -17,7 +17,6 @@ import java.util.*
  */
 @Entity
 class Artifact {
-
     @Id
     lateinit var name: String
 

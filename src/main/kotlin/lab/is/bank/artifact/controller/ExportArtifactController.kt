@@ -12,18 +12,18 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 @RequestMapping("/api/v0/export/artifact")
 class ExportArtifactController(
-    private val exportArtifactService: ExportArtifactService
+    private val exportArtifactService: ExportArtifactService,
 ) {
-
     @GetMapping("/csv")
     fun getArtifactCsv(
         @RequestParam("someOwner", required = false) someOwner: String?,
-        @RequestParam("someMagicProperty", required = false) someMagicProperty: List<String>?
+        @RequestParam("someMagicProperty", required = false) someMagicProperty: List<String>?,
     ): ResponseEntity<ByteArray> {
-        val data = exportArtifactService.exportArtifactsCSV(
-            someOwner = someOwner,
-            someMagicProperty = someMagicProperty
-        )
+        val data =
+            exportArtifactService.exportArtifactsCSV(
+                someOwner = someOwner,
+                someMagicProperty = someMagicProperty,
+            )
 
         val headers = HttpHeaders()
         headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=artifact_export.csv")
@@ -33,16 +33,16 @@ class ExportArtifactController(
         return ResponseEntity(data, headers, HttpStatus.OK)
     }
 
-
     @GetMapping("/pdf")
     fun getArtifactPdf(
         @RequestParam("someOwner", required = false) someOwner: String?,
-        @RequestParam("someMagicProperty", required = false) someMagicProperty: List<String>?
+        @RequestParam("someMagicProperty", required = false) someMagicProperty: List<String>?,
     ): ResponseEntity<ByteArray> {
-        val data = exportArtifactService.exportArtifactsPdf(
-            someOwner = someOwner,
-            someMagicProperty = someMagicProperty
-        )
+        val data =
+            exportArtifactService.exportArtifactsPdf(
+                someOwner = someOwner,
+                someMagicProperty = someMagicProperty,
+            )
 
         val headers = HttpHeaders()
         headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=artifact_export.pdf")
@@ -55,12 +55,13 @@ class ExportArtifactController(
     @GetMapping("/xlsx")
     fun getArtifactXlsx(
         @RequestParam("accountId", required = false) accountId: String?,
-        @RequestParam("types", required = false) types: List<String>?
+        @RequestParam("types", required = false) types: List<String>?,
     ): ResponseEntity<ByteArray> {
-            val data = exportArtifactService.exportArtifactsXLSX(
-            someOwner = accountId,
-            someMagicProperty = types
-        )
+        val data =
+            exportArtifactService.exportArtifactsXLSX(
+                someOwner = accountId,
+                someMagicProperty = types,
+            )
 
         val headers = HttpHeaders()
         headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=artifact_export.xlsx")

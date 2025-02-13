@@ -1,7 +1,5 @@
 package lab.`is`.bank.security
 
-
-import io.jsonwebtoken.ExpiredJwtException
 import jakarta.servlet.FilterChain
 import jakarta.servlet.ServletException
 import jakarta.servlet.http.HttpServletRequest
@@ -24,15 +22,13 @@ import java.io.IOException
 @Component
 class JwtAuthenticationFilter(
     private val jwtServiceImpl: JwtServiceImpl,
-    private val staffService: StaffService
-
+    private val staffService: StaffService,
 ) : OncePerRequestFilter() {
-
     @Throws(ServletException::class, IOException::class)
     override fun doFilterInternal(
         @NonNull request: HttpServletRequest,
         @NonNull response: HttpServletResponse,
-        @NonNull filterChain: FilterChain
+        @NonNull filterChain: FilterChain,
     ) {
         try {
             val authHeader = request.getHeader(HEADER_NAME)
@@ -44,27 +40,30 @@ class JwtAuthenticationFilter(
 
             val username: String = jwtServiceImpl.extractUserName(jwt)
             val role: String = jwtServiceImpl.extractRoles(jwt)
-            val newStaff = Staff().apply {
-                staffName = username
-                if(role.isNotBlank()){
-                    this.role = StaffRole.ROLE_ARTIFACTER
+            val newStaff =
+                Staff().apply {
+                    staffName = username
+                    if (role.isNotBlank()) {
+                        this.role = StaffRole.ROLE_ARTIFACTER
+                    }
                 }
-            }
 
             if (StringUtils.isNotEmpty(username) && SecurityContextHolder.getContext().authentication == null) {
                 try {
                     staffService.getOrCreateStaff(staff = newStaff)
-                }catch (_: DataIntegrityViolationException) { }
+                } catch (_: DataIntegrityViolationException) {
+                }
 
                 val userDetails: UserDetails? = staffService.getUserDetailsService().loadUserByUsername(username)
 
                 if (jwtServiceImpl.isTokenValid(jwt, userDetails!!)) {
                     val context = SecurityContextHolder.createEmptyContext()
-                    val authToken = UsernamePasswordAuthenticationToken(
-                        userDetails,
-                        null,
-                        userDetails.authorities
-                    )
+                    val authToken =
+                        UsernamePasswordAuthenticationToken(
+                            userDetails,
+                            null,
+                            userDetails.authorities,
+                        )
                     authToken.details = WebAuthenticationDetailsSource().buildDetails(request)
                     context.authentication = authToken
                     SecurityContextHolder.setContext(context)

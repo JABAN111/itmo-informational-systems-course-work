@@ -9,6 +9,4 @@ import jakarta.persistence.Table
 class Client {
     @Id
     lateinit var passportID: String
-
-
 }

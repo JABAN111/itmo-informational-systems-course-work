@@ -15,12 +15,12 @@ data class ArtifactDto(
 data class ArtifactHistoryDto(
     var clientsHistory: MutableList<Client> = mutableListOf(),
     var reasonToSave: String = "",
-    var artifact: ArtifactDto? = null
+    var artifact: ArtifactDto? = null,
 )
 
 data class MagicalPropertyDto(
     val dangerLevel: String = "",
-    var property: String = ""
+    var property: String = "",
 )
 
 data class ArtifactStorageDto(
@@ -31,7 +31,7 @@ data class KeyDto(
     val artifactStorage: ArtifactStorageDto,
     val client: ClientDto,
     val keyValue: String,
-    val giver: StaffDto
+    val giver: StaffDto,
 )
 
 data class ArtifactExportData(
@@ -40,12 +40,12 @@ data class ArtifactExportData(
     val ownerPassportId: String?,
     val magicalDangerLevel: String?,
     val lastChangeDate: Timestamp?,
-    val lastReasonToSave: String?
+    val lastReasonToSave: String?,
 )
 
 data class RetrieveArtifactRequest(
     val passportID: String,
-    val storageUuid: UUID
+    val storageUuid: UUID,
 )
 
 data class UpdateArtifactRequest(

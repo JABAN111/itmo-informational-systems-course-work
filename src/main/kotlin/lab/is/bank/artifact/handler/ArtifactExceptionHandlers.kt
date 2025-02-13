@@ -10,23 +10,17 @@ import org.springframework.web.bind.annotation.RestControllerAdvice
 
 @RestControllerAdvice
 class ArtifactExceptionHandlers {
-
     @ExceptionHandler(ArtifactExceptions::class)
     @ResponseStatus(HttpStatus.CONFLICT)
-    fun artifactException(e: ArtifactExceptions): String {
-        return "Artifact exception has been occurred: ${e.message}"
-    }
+    fun artifactException(e: ArtifactExceptions): String = "Artifact exception has been occurred: ${e.message}"
 
     @ExceptionHandler(UsedBanWord::class)
     @ResponseStatus(HttpStatus.CONFLICT)
-    fun usedBanWord(e: UsedBanWord): String {
-        return "User used ban word in field reasonToSave: ${e.message}, " +
-                "according to this - he will be banned"
-    }
+    fun usedBanWord(e: UsedBanWord): String =
+        "User used ban word in field reasonToSave: ${e.message}, " +
+            "according to this - he will be banned"
 
     @ExceptionHandler(ArtifactAlreadySaved::class)
     @ResponseStatus(HttpStatus.CONFLICT)
-    fun artifactAlreadySaved(e: ArtifactAlreadySaved): String {
-        return "User used already banned artifact, exception details: ${e.message}"
-    }
+    fun artifactAlreadySaved(e: ArtifactAlreadySaved): String = "User used already banned artifact, exception details: ${e.message}"
 }

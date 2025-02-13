@@ -5,23 +5,14 @@ import lab.`is`.bank.authorization.database.entity.StaffRole
 import lab.`is`.bank.authorization.dto.StaffDto
 
 class StaffMapper {
-
     companion object {
         fun toEntity(dto: StaffDto): Staff {
             val res = Staff()
 
             res.staffName = dto.staffName
-            res.role = if(dto.role != null) StaffRole.ROLE_ARTIFACTER else null
+            res.role = if (dto.role != null) StaffRole.ROLE_ARTIFACTER else null
 
             return res
-        }
-
-        fun toDto(staff: Staff): StaffDto {
-            return StaffDto(
-                staffName = staff.staffName,
-                role = staff.role?.name
-            )
-
         }
     }
 }

@@ -15,28 +15,30 @@ import org.springframework.stereotype.Service
 import java.io.ByteArrayOutputStream
 import java.io.OutputStreamWriter
 import java.nio.charset.StandardCharsets
-import java.util.*
 
 @Service
 class ExportArtifactServiceImpl(
-    private val artifactService: ArtifactService
+    private val artifactService: ArtifactService,
 ) : ExportArtifactService {
-
-    override fun exportArtifactsXLSX(someOwner: String?, someMagicProperty: List<String>?): ByteArray {
+    override fun exportArtifactsXLSX(
+        someOwner: String?,
+        someMagicProperty: List<String>?,
+    ): ByteArray {
         val artifacts = artifactService.getDataForExport(someOwner, someMagicProperty)
 
         val workbook = XSSFWorkbook()
         val sheet = workbook.createSheet("Artifacts")
 
         val headerRow = sheet.createRow(0)
-        val headers = arrayOf(
-            "artifactName",
-            "createdDate",
-            "ownerPassportId",
-            "magicalDangerLevel",
-            "lastChangeDate",
-            "lastReasonToSave"
-        )
+        val headers =
+            arrayOf(
+                "artifactName",
+                "createdDate",
+                "ownerPassportId",
+                "magicalDangerLevel",
+                "lastChangeDate",
+                "lastReasonToSave",
+            )
         headers.forEachIndexed { index, header ->
             headerRow.createCell(index).setCellValue(header)
         }
@@ -60,7 +62,10 @@ class ExportArtifactServiceImpl(
         return byteArrayOutputStream.toByteArray()
     }
 
-    override fun exportArtifactsCSV(someOwner: String?, someMagicProperty: List<String>?): ByteArray {
+    override fun exportArtifactsCSV(
+        someOwner: String?,
+        someMagicProperty: List<String>?,
+    ): ByteArray {
         val artifacts = artifactService.getDataForExport(someOwner, someMagicProperty)
 
         val byteArrayOutputStream = ByteArrayOutputStream()
@@ -75,8 +80,8 @@ class ExportArtifactServiceImpl(
                 "ownerPassportId",
                 "magicalDangerLevel",
                 "lastChangeDate",
-                "lastReasonToSave"
-            )
+                "lastReasonToSave",
+            ),
         )
 
         artifacts.forEach { artifact ->
@@ -87,8 +92,8 @@ class ExportArtifactServiceImpl(
                     artifact.ownerPassportId ?: "",
                     artifact.magicalDangerLevel ?: "",
                     artifact.lastChangeDate.toString(),
-                    artifact.lastReasonToSave ?: ""
-                )
+                    artifact.lastReasonToSave ?: "",
+                ),
             )
         }
 
@@ -98,31 +103,39 @@ class ExportArtifactServiceImpl(
         return byteArrayOutputStream.toByteArray()
     }
 
-    override fun exportArtifactsPdf(someOwner: String?, someMagicProperty: List<String>?): ByteArray {
+    override fun exportArtifactsPdf(
+        someOwner: String?,
+        someMagicProperty: List<String>?,
+    ): ByteArray {
         val artifacts = artifactService.getDataForExport(someOwner, someMagicProperty)
 
         val byteArrayOutputStream = ByteArrayOutputStream()
         val pdfWriter = PdfWriter(byteArrayOutputStream)
         val pdfDocument = PdfDocument(pdfWriter)
 
-        pdfDocument.defaultPageSize = com.itextpdf.kernel.geom.PageSize.A4.rotate()
+        pdfDocument.defaultPageSize =
+            com.itextpdf.kernel.geom.PageSize.A4
+                .rotate()
 
         val document = Document(pdfDocument)
 
         val table = Table(floatArrayOf(2f, 6f, 4f, 4f, 4f, 4f, 4f))
         table.setWidth(100f)
 
-        val headers = arrayOf(
-            "artifactName",
-            "createdDate",
-            "ownerPassportId",
-            "magicalDangerLevel",
-            "lastChangeDate",
-            "lastReasonToSave"
-        )
+        val headers =
+            arrayOf(
+                "artifactName",
+                "createdDate",
+                "ownerPassportId",
+                "magicalDangerLevel",
+                "lastChangeDate",
+                "lastReasonToSave",
+            )
         headers.forEach { header ->
-            val headerCell = Cell().add(Paragraph(header))
-                .setBold()
+            val headerCell =
+                Cell()
+                    .add(Paragraph(header))
+                    .setBold()
             table.addHeaderCell(headerCell)
         }
 
@@ -130,14 +143,15 @@ class ExportArtifactServiceImpl(
             val isEvenRow = rowIndex % 2 == 0
             val rowColor = if (isEvenRow) DeviceGray(0.9f) else null
 
-            val cells = arrayOf(
-                artifact.artifactName,
-                artifact.createdDate.toString(),
-                artifact.ownerPassportId ?: "",
-                artifact.magicalDangerLevel ?: "",
-                artifact.lastChangeDate.toString(),
-                artifact.lastReasonToSave ?: ""
-            )
+            val cells =
+                arrayOf(
+                    artifact.artifactName,
+                    artifact.createdDate.toString(),
+                    artifact.ownerPassportId ?: "",
+                    artifact.magicalDangerLevel ?: "",
+                    artifact.lastChangeDate.toString(),
+                    artifact.lastReasonToSave ?: "",
+                )
 
             cells.forEach { cellValue ->
                 val cell = Cell().add(Paragraph(cellValue))

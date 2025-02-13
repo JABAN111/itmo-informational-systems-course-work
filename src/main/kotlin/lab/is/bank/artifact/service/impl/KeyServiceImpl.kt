@@ -14,23 +14,19 @@ import java.util.*
 @Transactional
 class KeyServiceImpl(
     private val keyRepository: KeyRepository,
-): KeyService {
+) : KeyService {
     override fun get(uuid: UUID): Key? {
         val result = keyRepository.findById(uuid)
-        return if(result.isEmpty){
+        return if (result.isEmpty) {
             null
-        }else{
+        } else {
             result.get()
         }
     }
 
-    override fun save(key: Key): Key {
-        return keyRepository.save(key)
-    }
+    override fun save(key: Key): Key = keyRepository.save(key)
 
-    override fun save(keyDto: KeyDto): Key {
-        return save(KeyMapper.toEntity(keyDto))
-    }
+    override fun save(keyDto: KeyDto): Key = save(KeyMapper.toEntity(keyDto))
 
     override fun delete(clientPassport: String) {
         keyRepository.deleteKeyByClientPassportID(clientPassport)

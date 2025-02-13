@@ -17,9 +17,8 @@ import java.io.InputStreamReader
 @Service
 class AiOperatorServiceImpl(
     private val httpTransport: NetHttpTransport = NetHttpTransport(),
-    private val objectMapper: ObjectMapper = ObjectMapper()
+    private val objectMapper: ObjectMapper = ObjectMapper(),
 ) : AiOperatorService {
-
     private val AI_SERVER = "http://localhost:8000"
     private val IS_SAVABLE = "$AI_SERVER/validate-save"
     private val DANGER_LVL = "$AI_SERVER/level-of-danger"
@@ -33,12 +32,15 @@ class AiOperatorServiceImpl(
 
     override fun getSpecification(artifactName: String): String {
         val url = GenericUrl(GET_SPECIFIACTION)
-        val content = mapOf(
-            "user_input" to artifactName
-        )
+        val content =
+            mapOf(
+                "user_input" to artifactName,
+            )
 
-        val req: HttpRequest = httpTransport.createRequestFactory()
-            .buildPostRequest(url, JsonHttpContent(GsonFactory.getDefaultInstance(), content))
+        val req: HttpRequest =
+            httpTransport
+                .createRequestFactory()
+                .buildPostRequest(url, JsonHttpContent(GsonFactory.getDefaultInstance(), content))
 
         val response: HttpResponse = req.execute()
         val responseText = response.parseAsString()
@@ -49,27 +51,36 @@ class AiOperatorServiceImpl(
 
     override fun requestUpdate(updateArtifact: UpdateArtifactRequest) {
         val url = GenericUrl(UPDATE_REQUEST)
-        val content = mapOf(
-            "user_input" to updateArtifact.name,
-            "new_value" to updateArtifact.newDangerLevel,
-        )
+        val content =
+            mapOf(
+                "user_input" to updateArtifact.name,
+                "new_value" to updateArtifact.newDangerLevel,
+            )
 
-        val req: HttpRequest = httpTransport.createRequestFactory().buildPostRequest(
-            url, JsonHttpContent(GsonFactory.getDefaultInstance(), content)
-        )
+        val req: HttpRequest =
+            httpTransport.createRequestFactory().buildPostRequest(
+                url,
+                JsonHttpContent(GsonFactory.getDefaultInstance(), content),
+            )
         val response: HttpResponse = req.execute()
         response.disconnect()
     }
 
-    override fun validateArtifact(artifactName: String, userAccountName: String): Boolean {
+    override fun validateArtifact(
+        artifactName: String,
+        userAccountName: String,
+    ): Boolean {
         val url = GenericUrl(IS_SAVABLE)
-        val content = mapOf(
-            "user_input" to artifactName,
-            "user_account_name" to userAccountName
-        )
+        val content =
+            mapOf(
+                "user_input" to artifactName,
+                "user_account_name" to userAccountName,
+            )
 
-        val req: HttpRequest = httpTransport.createRequestFactory()
-            .buildPostRequest(url, JsonHttpContent(GsonFactory.getDefaultInstance(), content))
+        val req: HttpRequest =
+            httpTransport
+                .createRequestFactory()
+                .buildPostRequest(url, JsonHttpContent(GsonFactory.getDefaultInstance(), content))
 
         val response: HttpResponse = req.execute()
         val responseText = response.parseAsString()
@@ -81,8 +92,10 @@ class AiOperatorServiceImpl(
         val url = GenericUrl(DANGER_LVL)
         val content = mapOf("user_input" to artifactName)
 
-        val req: HttpRequest = httpTransport.createRequestFactory()
-            .buildPostRequest(url, JsonHttpContent(GsonFactory.getDefaultInstance(), content))
+        val req: HttpRequest =
+            httpTransport
+                .createRequestFactory()
+                .buildPostRequest(url, JsonHttpContent(GsonFactory.getDefaultInstance(), content))
 
         val response: HttpResponse = req.execute()
         val responseText = response.parseAsString()
@@ -93,52 +106,62 @@ class AiOperatorServiceImpl(
     override fun getAllArtifact(): List<ArtifactDto> {
         val url = GenericUrl(GET_ALL)
 
-        val req: HttpRequest = httpTransport.createRequestFactory()
-            .buildGetRequest(url)
+        val req: HttpRequest =
+            httpTransport
+                .createRequestFactory()
+                .buildGetRequest(url)
 
         val response: HttpResponse = req.execute()
         val responseBody = InputStreamReader(response.content).use { it.readText() }
         response.disconnect()
 
-        val list: List<ArtifactDataFromAiServer> = objectMapper.readValue(
-            responseBody,
-            objectMapper.typeFactory.constructCollectionType(
-                List::class.java,
-                ArtifactDataFromAiServer::class.java
+        val list: List<ArtifactDataFromAiServer> =
+            objectMapper.readValue(
+                responseBody,
+                objectMapper.typeFactory.constructCollectionType(
+                    List::class.java,
+                    ArtifactDataFromAiServer::class.java,
+                ),
             )
-        )
         val artifacts = mutableListOf<ArtifactDto>()
-        for(aiArtifact in list) {
-
-            val artifact = ArtifactDto(
-                name = aiArtifact.Name,
-                magicalProperty = MagicalPropertyDto(dangerLevel = aiArtifact.Lvl)
-            )
+        for (aiArtifact in list) {
+            val artifact =
+                ArtifactDto(
+                    name = aiArtifact.Name,
+                    magicalProperty = MagicalPropertyDto(dangerLevel = aiArtifact.Lvl),
+                )
 
             artifacts.add(artifact)
         }
-        return artifacts;
+        return artifacts
     }
 
     override fun getAllArtifact(dangerousLevel: String): List<ArtifactDto> {
         val url = GenericUrl("$GET_ALL_LVL/$dangerousLevel")
 
-        val req: HttpRequest = httpTransport.createRequestFactory()
-            .buildGetRequest(url)
+        val req: HttpRequest =
+            httpTransport
+                .createRequestFactory()
+                .buildGetRequest(url)
 
         val response: HttpResponse = req.execute()
         val responseBody = InputStreamReader(response.content).use { it.readText() }
         response.disconnect()
 
-        return objectMapper.readValue(responseBody, objectMapper.typeFactory.constructCollectionType(List::class.java, ArtifactDto::class.java))
+        return objectMapper.readValue(
+            responseBody,
+            objectMapper.typeFactory.constructCollectionType(List::class.java, ArtifactDto::class.java),
+        )
     }
 
     override fun validateDescription(reasonToSave: String): Boolean {
         val url = GenericUrl(DESCRIPTION_VALIDATION)
         val content = mapOf("reason_to_save" to reasonToSave)
 
-        val req: HttpRequest = httpTransport.createRequestFactory()
-            .buildPostRequest(url, JsonHttpContent(GsonFactory.getDefaultInstance(), content))
+        val req: HttpRequest =
+            httpTransport
+                .createRequestFactory()
+                .buildPostRequest(url, JsonHttpContent(GsonFactory.getDefaultInstance(), content))
 
         val response: HttpResponse = req.execute()
         val responseText = response.parseAsString()
@@ -150,8 +173,10 @@ class AiOperatorServiceImpl(
         val url = GenericUrl(BAN_USER)
         val content = mapOf("user_account_name" to userAccountName)
 
-        val req: HttpRequest = httpTransport.createRequestFactory()
-            .buildPostRequest(url, JsonHttpContent(GsonFactory.getDefaultInstance(), content))
+        val req: HttpRequest =
+            httpTransport
+                .createRequestFactory()
+                .buildPostRequest(url, JsonHttpContent(GsonFactory.getDefaultInstance(), content))
 
         val response: HttpResponse = req.execute()
         response.disconnect()
@@ -162,20 +187,21 @@ class AiOperatorServiceImpl(
         val url = GenericUrl(BAN_WORD)
         val content = mapOf("user_input" to word)
 
-        val req: HttpRequest = httpTransport.createRequestFactory()
-            .buildPostRequest(url, JsonHttpContent(GsonFactory.getDefaultInstance(), content))
+        val req: HttpRequest =
+            httpTransport
+                .createRequestFactory()
+                .buildPostRequest(url, JsonHttpContent(GsonFactory.getDefaultInstance(), content))
 
         val response: HttpResponse = req.execute()
         response.disconnect()
         return response.statusCode == 200
     }
 
-
     /**
      * Локальный класс для удобного маппинга данных с сервера
      */
     private data class ArtifactDataFromAiServer(
         val Name: String,
-        val Lvl: String
+        val Lvl: String,
     )
 }

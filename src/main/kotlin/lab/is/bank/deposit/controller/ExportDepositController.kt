@@ -1,7 +1,5 @@
 package lab.`is`.bank.deposit.controller
 
-import lab.`is`.bank.artifact.service.interfaces.ExportArtifactService
-import lab.`is`.bank.authorization.service.impl.StaffServiceImpl
 import lab.`is`.bank.deposit.service.interfaces.ExportDepositService
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
@@ -12,19 +10,15 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import java.util.*
 
-
 @RestController
 @RequestMapping("/api/v0/export/deposit")
 class ExportDepositController(
     private val exportDepositService: ExportDepositService,
-    private val staffService: StaffServiceImpl,
 ) {
-
-
     @GetMapping("/xlsx")
     fun getDepositsXLSX(
         @RequestParam("accountId") accountId: UUID,
-        @RequestParam("types") types: Array<String>
+        @RequestParam("types") types: Array<String>,
     ): ResponseEntity<ByteArray> {
         val data = exportDepositService.exportDepositsXLSX(accountId, types)
 
@@ -39,7 +33,7 @@ class ExportDepositController(
     @GetMapping("/csv")
     fun getDepositsCSV(
         @RequestParam("accountId") accountId: UUID,
-        @RequestParam("types") types: Array<String>
+        @RequestParam("types") types: Array<String>,
     ): ResponseEntity<ByteArray> {
         println(types)
         val data = exportDepositService.exportDepositsCSV(accountId, types)
@@ -55,7 +49,7 @@ class ExportDepositController(
     @GetMapping("/pdf")
     fun getDepositsPdf(
         @RequestParam("accountId") accountId: UUID,
-        @RequestParam("types") types: Array<String>
+        @RequestParam("types") types: Array<String>,
     ): ResponseEntity<ByteArray> {
         val data = exportDepositService.exportDepositsPdf(accountId, types)
 
@@ -66,5 +60,4 @@ class ExportDepositController(
 
         return ResponseEntity(data, headers, HttpStatus.OK)
     }
-
 }

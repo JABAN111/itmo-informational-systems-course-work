@@ -4,5 +4,5 @@ enum class TransactionType {
     DEPOSITING,
     CREATE,
     TRANSFER,
-    WITHDRAW
+    WITHDRAW,
 }

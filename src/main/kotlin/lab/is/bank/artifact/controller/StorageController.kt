@@ -10,16 +10,18 @@ import java.util.*
 @RequestMapping("/api/v0/storage")
 class StorageController(
     private val artifactStorageService: ArtifactStorageService,
-    private val artifactKeysServiceProcessing: ArtifactKeysServiceProcessing
+    private val artifactKeysServiceProcessing: ArtifactKeysServiceProcessing,
 ) {
     @GetMapping("get-info/{uuid}")
-    fun getInfoAboutStorage(@PathVariable uuid: String): ArtifactStorage {
-        return artifactStorageService.get(UUID.fromString(uuid))!!
-    }
+    fun getInfoAboutStorage(
+        @PathVariable uuid: String,
+    ): ArtifactStorage = artifactStorageService.get(UUID.fromString(uuid))!!
 
     @DeleteMapping("/artifact/{artifactName}/{passport}")
-    fun deleteKey(@PathVariable artifactName: String, @PathVariable passport: String) {
+    fun deleteKey(
+        @PathVariable artifactName: String,
+        @PathVariable passport: String,
+    ) {
         artifactKeysServiceProcessing.takeArtifact(artifactName, passport)
     }
-
 }

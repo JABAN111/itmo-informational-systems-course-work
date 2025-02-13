@@ -8,5 +8,4 @@ import java.util.*
 @Repository
 interface StaffRepository : JpaRepository<Staff, UUID> {
     fun findByStaffName(staffName: String?): Staff?
-
 }

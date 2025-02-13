@@ -9,5 +9,5 @@ data class TransactionDto(
     val amount: BigDecimal,
     var transactionStatus: String = "FAILED",
     val transactionType: String? = null,
-    val transactionDate: Date = Date()
+    val transactionDate: Date = Date(),
 )

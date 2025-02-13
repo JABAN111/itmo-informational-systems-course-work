@@ -1,0 +1,9 @@
+[submodule "keycloak-theme"]
+	path = keycloak-theme
+	url = https://github.com/JABAN111/informational-system-course-work-keycloak-theme.git
+[submodule "informational-system-course-work-frontend"]
+	path = informational-system-course-work-frontend
+	url = https://github.com/JABAN111/informational-system-course-work-frontend.git
+[submodule "frontend"]
+	path = frontend
+	url = https://github.com/JABAN111/informational-system-course-work-frontend.git

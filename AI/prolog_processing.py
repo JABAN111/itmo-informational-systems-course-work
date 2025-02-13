@@ -24,6 +24,11 @@ def check_description(description: str) -> bool:
             return False
     return True
 
+
+
+def update_magical_property(name, new_level):
+    return _send_query(f'update_magical_property({name}, {new_level}).')
+
 def add_banned_word(word: str):
     prolog.assertz(f"banned_word('{word}')")
     logger.info(f"Добавлено запрещённое слово: {word}")
@@ -38,6 +43,12 @@ def analyze_artifact(artifact_name, user):
     result = _send_query(req)
     return bool(list(result))
 
+def get_magical_specification(artifact_name) -> str:
+    query = f'magical_specification({artifact_name}, Specification)'
+    result = list(_send_query(query))
+    if len(result) != 0:
+        return result[0]["Specification"]
+    return "Unknown"
 
 def _level_of_danger(artifact_name):
     debug_q = f"magical_property({artifact_name}, Level)."
@@ -48,8 +59,11 @@ def _level_of_danger(artifact_name):
         return "Unknown"
 
 
-def get_all():
+def get_all_magical_properties():
     return list(_send_query("magical_property(Name, Lvl)"))
+
+def get_all_magical_specifications():
+    return list(_send_query("magical_specification(Name, Lvl)"))
 
 
 def get_all_with_specified_level(specified_level: str):
@@ -64,24 +78,15 @@ def process_artifact(artifact_name: str, user_account_name: str):
     return analyze_artifact(artifact_name, user_account_name)
 
 
-# Функция для получения уровня опасности артефакта
 def level_of_danger(artifact_name):
     return _level_of_danger(__process_data(artifact_name))
 
 
-# Функция для обработки данных
 def __process_data(str):
     return str.strip().lower()
 
 
 if __name__ == "__main__":
-    description1 = "This wand is extremely powerful and dark"
-    description2 = "This is a legendary item of great power"
-    print(check_description(description1))
-    print(check_description(description2))
+    print(get_magical_specification("resurrection_stone"))
 
-    add_banned_word("dangerous")
-    print(check_description("This is a dangerous artifact"))
 
-    artifact = input("Введите артефакт для анализа (например: elder_wand): ").strip().lower()
-    print(f"Можно ли сохранить артефакт {artifact}: {process_artifact(artifact)}")

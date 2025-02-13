@@ -7,7 +7,7 @@ import lab.`is`.bank.artifact.database.repository.ArtifactRepository
 import lab.`is`.bank.artifact.dto.ArtifactDto
 import lab.`is`.bank.artifact.dto.ArtifactExportData
 import lab.`is`.bank.artifact.mapper.ArtifactMapper
-import lab.`is`.bank.artifact.service.exceptions.ArtifactAlreadySaved
+import lab.`is`.bank.artifact.exception.ArtifactAlreadySaved
 import lab.`is`.bank.artifact.service.interfaces.ArtifactService
 import org.springframework.stereotype.Service
 import java.sql.Timestamp
@@ -20,20 +20,26 @@ class ArtifactServiceImpl(
     private val artifactRepository: ArtifactRepository
 ) : ArtifactService {
     override fun save(artifact: Artifact): Artifact {
-        if (artifactRepository.findByName(artifact.name) != null) {
+        val oldArtifact = artifactRepository.findByName(artifact.name)
+        if (oldArtifact != null && oldArtifact.isStored) {
             throw ArtifactAlreadySaved("Artifact already in storage")
         }
         return artifactRepository.save(artifact)
     }
 
+
+
     override fun save(artifactDto: ArtifactDto): Artifact {
-        if (artifactRepository.findByName(artifactDto.name) != null) {
+        val oldArtifact = artifactRepository.findByName(artifactDto.name)
+        if (oldArtifact != null && oldArtifact.isStored) {
             throw ArtifactAlreadySaved("Artifact already in storage")
         }
-        return save(ArtifactMapper.toEntity(artifactDto))
+        val artifactEntity = ArtifactMapper.toEntity(artifactDto).apply { this.isStored = true }
+
+        return save(artifactEntity)
     }
 
-    override fun deleteArtifact(artifactName: String) {
+    override fun delete(artifactName: String) {
         artifactRepository.deleteByName(artifactName)
     }
 
@@ -49,8 +55,7 @@ class ArtifactServiceImpl(
 
     private fun mapTuplesToArtifactExportData(tuples: List<Tuple>): List<ArtifactExportData> {
         return tuples.map { tuple ->
-            val artifactId = tuple.get("artifact_id", UUID::class.java)
-            val artifactName = tuple.get("artifact_name", String::class.java)
+            val artifactName = tuple.get("artifact_nam", String::class.java)
             val createdDate = tuple.get("created_date", Timestamp::class.java)
             val ownerPassportId = tuple.get("owner_passport_id", String::class.java)
             val magicalDangerLevel = tuple.get("magical_danger_level", String::class.java)
@@ -58,7 +63,6 @@ class ArtifactServiceImpl(
             val lastReasonToSave = tuple.get("last_reason_to_save", String::class.java)
 
             ArtifactExportData(
-                artifactId = artifactId,
                 artifactName = artifactName,
                 createdDate = createdDate,
                 ownerPassportId = ownerPassportId,
@@ -68,4 +72,5 @@ class ArtifactServiceImpl(
             )
         }
     }
+
 }

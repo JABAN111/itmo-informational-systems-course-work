@@ -1,5 +1,6 @@
 package lab.`is`.bank.artifact.service.impl
 
+import jakarta.transaction.Transactional
 import lab.`is`.bank.artifact.database.entity.ArtifactStorage
 import lab.`is`.bank.artifact.database.repository.ArtifactStorageRepository
 import lab.`is`.bank.artifact.dto.ArtifactStorageDto
@@ -9,6 +10,7 @@ import org.springframework.stereotype.Service
 import java.util.*
 
 @Service
+@Transactional
 class ArtifactStorageServiceImpl(
     private val artifactStorageRepository: ArtifactStorageRepository
 ) : ArtifactStorageService {
@@ -20,17 +22,30 @@ class ArtifactStorageServiceImpl(
         return artifactStorageRepository.save(artifactStorage)
     }
 
-    override fun getInfo(id: UUID): ArtifactStorage {
-        val result = artifactStorageRepository.findByUuid(id)
-        println(result)
-        if(result != null) {
-            return result
-        }
-        TODO("da")
+
+
+    override fun get(id: UUID): ArtifactStorage? {
+        return artifactStorageRepository.findByUuid(id)
     }
 
-    override fun getArtifactStorage(id: UUID): ArtifactStorage? {
-        return artifactStorageRepository.findByUuid(id)
+    override fun get(artifactName: String): ArtifactStorage? {
+        val res = artifactStorageRepository.findByArtifactName(artifactName)
+
+        if (res.isNotEmpty()) {
+            println(res.values)
+            res["uuid"]
+
+            val uuid = UUID.fromString(res["uuid"].toString())
+
+            return artifactStorageRepository.findById(uuid).orElse(null)
+        }
+
+        return null
+    }
+
+
+    override fun delete(uuid: UUID) {
+        return artifactStorageRepository.deleteById(uuid)
     }
 
 

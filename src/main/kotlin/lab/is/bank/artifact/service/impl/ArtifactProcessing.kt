@@ -9,15 +9,16 @@ import com.google.api.client.http.json.JsonHttpContent
 import com.google.api.client.json.gson.GsonFactory
 import lab.`is`.bank.artifact.dto.ArtifactDto
 import lab.`is`.bank.artifact.dto.MagicalPropertyDto
-import lab.`is`.bank.artifact.service.interfaces.ArtifactValidationService
+import lab.`is`.bank.artifact.dto.UpdateArtifactRequest
+import lab.`is`.bank.artifact.service.interfaces.AiOperatorService
 import org.springframework.stereotype.Service
 import java.io.InputStreamReader
 
 @Service
-class AiOperatorService(
+class AiOperatorServiceImpl(
     private val httpTransport: NetHttpTransport = NetHttpTransport(),
     private val objectMapper: ObjectMapper = ObjectMapper()
-) : ArtifactValidationService {
+) : AiOperatorService {
 
     private val AI_SERVER = "http://localhost:8000"
     private val IS_SAVABLE = "$AI_SERVER/validate-save"
@@ -28,6 +29,7 @@ class AiOperatorService(
     private val BAN_USER = "$AI_SERVER/add-ban-user"
     private val BAN_WORD = "$AI_SERVER/add-ban-word"
     private val GET_SPECIFIACTION = "$AI_SERVER/get-specification"
+    private val UPDATE_REQUEST = "$AI_SERVER/request-update-person"
 
     override fun getSpecification(artifactName: String): String {
         val url = GenericUrl(GET_SPECIFIACTION)
@@ -43,6 +45,20 @@ class AiOperatorService(
         response.disconnect()
 
         return responseText
+    }
+
+    override fun requestUpdate(updateArtifact: UpdateArtifactRequest) {
+        val url = GenericUrl(UPDATE_REQUEST)
+        val content = mapOf(
+            "user_input" to updateArtifact.name,
+            "new_value" to updateArtifact.newDangerLevel,
+        )
+
+        val req: HttpRequest = httpTransport.createRequestFactory().buildPostRequest(
+            url, JsonHttpContent(GsonFactory.getDefaultInstance(), content)
+        )
+        val response: HttpResponse = req.execute()
+        response.disconnect()
     }
 
     override fun validateArtifact(artifactName: String, userAccountName: String): Boolean {

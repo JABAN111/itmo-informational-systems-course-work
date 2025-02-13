@@ -1,6 +1,5 @@
 CREATE INDEX idx_artifact_in_storage ON artifact_storage (uuid, artifact_uuid);
 
-
 CREATE INDEX idx_magical_properties ON magical_property (danger_level);
 
 CREATE INDEX idx_accounts_user ON deposit_account (owner_passportid, money_type, balance DESC);
@@ -13,10 +12,10 @@ $$
 BEGIN
     RETURN QUERY
         SELECT
-            ac.money_type::TEXT AS moneyType, -- Приведение к TEXT
+            ac.money_type::TEXT AS moneyType,
             tr.to_account_id AS accountId,
             tr.amount AS transactionAmount,
-            tr.transaction_type::TEXT AS transactionType -- Приведение к TEXT
+            tr.transaction_type::TEXT AS transactionType
         FROM
             deposit_account ac
                 LEFT JOIN
@@ -37,8 +36,7 @@ CREATE OR REPLACE FUNCTION get_filtered_artifacts(
     some_magic_properties TEXT[] DEFAULT NULL
 )
     RETURNS TABLE(
-                     artifact_id UUID,
-                     artifact_name VARCHAR,
+                     artifact_nam VARCHAR,
                      created_date TIMESTAMP WITHOUT TIME ZONE,
                      owner_passport_id VARCHAR,
                      magical_danger_level VARCHAR,
@@ -50,19 +48,21 @@ AS $$
 BEGIN
     RETURN QUERY
         SELECT
-            a.uuid AS artifact_id,
-            a.name AS artifact_name,
+            a.name AS artifact_nam,
             a.created_at AS created_date,
             c.passportid AS owner_passport_id,
             mp.danger_level AS magical_danger_level,
             ah.change_date AS last_change_date,
             ah.reason_to_save AS last_reason_to_save
-        FROM artifact a
-                 LEFT JOIN client c ON a.current_client_passport_id = c.passportid
-                 LEFT JOIN magical_property mp ON a.magical_property_uuid = mp.uuid
-                 LEFT JOIN artifact_history ah ON a.history_uuid = ah.uuid
+
+        FROM artifact_history ah
+            LEFT JOIN artifact a on ah.artifact_name = a.name
+            LEFT JOIN client c ON a.current_client_passport_id = c.passportid
+            LEFT JOIN magical_property mp ON a.magical_property_uuid = mp.uuid
+
+
         WHERE (c.passportid = some_owner OR some_owner IS NULL)
-          AND (some_magic_properties IS NULL OR mp.danger_level = ANY(some_magic_properties)) -- Измененная проверка
+          AND (some_magic_properties IS NULL OR mp.danger_level = ANY(some_magic_properties))
         ORDER BY a.created_at DESC;
 END;
 $$;

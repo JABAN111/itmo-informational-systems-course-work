@@ -9,9 +9,14 @@ RUN apt-get update -y && \
     apt-get install -y swi-prolog vim && \
     apt-get clean
 
+COPY requirements.txt /app
+
+RUN pip install -r requirements.txt
+
+
 COPY . /app
 
-RUN pip install dist/AI-1.0.1-py3-none-any.whl
+
 
 
 EXPOSE 8000

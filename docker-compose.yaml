@@ -78,8 +78,26 @@ services:
       dockerfile: Dockerfile
     ports:
       - "8000:8000"
+    environment:
+      pg_uri: "postgresql://ai:user@pg_ai:5432/course"
+    depends_on:
+      - pg_ai
     networks:
       - gringots_network
+  pg_ai:
+    image: postgres:13.3
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: "ai"
+      POSTGRES_PASSWORD: "user"
+      POSTGRES_DB: "course"
+    ports:
+      - "3686:5432"
+    volumes:
+      - pg_ai_data:/var/lib/postgresql/data
+    networks:
+      - gringots_network
+
 
   postgres-exporter:
     image: prometheuscommunity/postgres-exporter
@@ -133,6 +151,8 @@ volumes:
   pg_data:
   pg_backups:
   grafana_data:
+  pg_ai_data:
+
 
 networks:
   gringots_network:

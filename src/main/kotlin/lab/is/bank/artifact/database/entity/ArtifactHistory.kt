@@ -20,7 +20,7 @@ class ArtifactHistory {
     )
     var clientsHistory: MutableList<Client> = mutableListOf()
 
-    @OneToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn
     lateinit var artifact: Artifact
 

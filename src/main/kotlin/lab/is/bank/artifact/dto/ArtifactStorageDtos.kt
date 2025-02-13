@@ -1,6 +1,5 @@
 package lab.`is`.bank.artifact.dto
 
-import lab.`is`.bank.artifact.database.entity.Artifact
 import lab.`is`.bank.authorization.database.entity.Client
 import lab.`is`.bank.authorization.dto.ClientDto
 import lab.`is`.bank.authorization.dto.StaffDto
@@ -36,11 +35,20 @@ data class KeyDto(
 )
 
 data class ArtifactExportData(
-    val artifactId: UUID,
     val artifactName: String,
     val createdDate: Timestamp,
     val ownerPassportId: String?,
     val magicalDangerLevel: String?,
     val lastChangeDate: Timestamp?,
     val lastReasonToSave: String?
+)
+
+data class RetrieveArtifactRequest(
+    val passportID: String,
+    val storageUuid: UUID
+)
+
+data class UpdateArtifactRequest(
+    val name: String,
+    val newDangerLevel: String,
 )

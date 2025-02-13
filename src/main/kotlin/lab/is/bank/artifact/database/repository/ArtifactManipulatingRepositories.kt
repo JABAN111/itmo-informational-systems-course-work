@@ -12,11 +12,18 @@ import java.util.*
 @Repository
 interface ArtifactStorageRepository : JpaRepository<ArtifactStorage, UUID>{
     fun findByUuid(uuid: UUID): ArtifactStorage?
+    @Query(nativeQuery = true, value = "select * from artifact_storage where artifact_name = :artifactName")
+    fun findByArtifactName(@Param("artifactName") artifactName: String): Map<String, Tuple>
+    fun deleteByUuid(uuid: UUID)
 }
 
 @Repository
 interface KeyRepository : JpaRepository<Key, UUID>{
     fun findByClient(client: Client): List<Key>
+    fun findByClientPassportID(clientPassportId: String): List<Key>
+
+    fun deleteKeyByArtifactStorage(artifactStorage: ArtifactStorage)
+    fun deleteKeyByClientPassportID(clientPassport: String)
 }
 
 @Repository
@@ -44,6 +51,7 @@ interface ArtifactRepository : JpaRepository<Artifact, String> {
 @Repository
 interface ArtifactHistoryRepository : JpaRepository<ArtifactHistory, UUID>{
     fun findArtifactHistoriesByArtifact(artifact: Artifact): ArtifactHistory?
+    fun deleteByArtifactName(artifactName: String)
 }
 
 @Repository

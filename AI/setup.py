@@ -5,9 +5,11 @@ def get_dependencies(req_file="requirements.txt"):
     with open(req_file, "r", encoding="utf-8") as f:
         for line in f:
             line = line.strip()
-            if line:
+            if line and "==" in line:
                 package, version = line.split("==")
                 dependencies.append(f"{package}>={version}")
+            elif line and "#" not in line:
+                dependencies.append(line)
     return dependencies
 
 name = "AI"

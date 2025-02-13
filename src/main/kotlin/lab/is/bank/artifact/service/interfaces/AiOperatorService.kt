@@ -1,12 +1,14 @@
 package lab.`is`.bank.artifact.service.interfaces
 
 import lab.`is`.bank.artifact.dto.ArtifactDto
+import lab.`is`.bank.artifact.dto.UpdateArtifactRequest
 
-interface ArtifactValidationService {
+interface AiOperatorService {
 
     fun validateArtifact(artifactName: String, userAccountName: String): Boolean
     fun levelOfDanger(artifactName: String): String
     fun getSpecification(artifactName: String): String
+    fun requestUpdate(updateArtifact: UpdateArtifactRequest)
 
     /**
      * Request for python AI service, return all actual artifact

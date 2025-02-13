@@ -5,9 +5,10 @@ import lab.`is`.bank.authorization.dto.ClientDto
 
 interface ClientService {
 
-    fun save(clientDto: ClientDto) : Client
+    fun save(clientDto: ClientDto): Client
 
-    fun getIfClientExists(passportID: String) : Client
+    fun getIfClientExists(passportID: String): Client
+    fun get(passportID: String): Client?
 
-    fun saveOrGet(clientDto: ClientDto) : Client
+    fun saveOrGet(clientDto: ClientDto): Client
 }

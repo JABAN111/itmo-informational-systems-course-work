@@ -1,5 +1,7 @@
+AI@ file:///Users/jaba/Documents/life/ITMO/IS/%D0%BA%D1%83%D1%80%D1%81%D0%B0%D1%87/front-back/back/gringots/AI/dist/AI-1.0.1-py3-none-any.whl
 annotated-types>=0.7.0
 anyio>=4.8.0
+asgiref>=3.8.1
 certifi>=2024.12.14
 click>=8.1.8
 dnspython>=2.7.0
@@ -27,6 +29,7 @@ rich>=13.9.4
 rich-toolkit>=0.12.0
 shellingham>=1.5.4
 sniffio>=1.3.1
+sqlparse>=0.5.3
 starlette>=0.41.3
 typer>=0.15.1
 typing_extensions>=4.12.2

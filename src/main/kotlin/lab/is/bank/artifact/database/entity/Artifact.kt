@@ -29,10 +29,13 @@ class Artifact {
     @JoinColumn(name = "current_client_passport_id")
     lateinit var currentClient: Client
 
+    @Column(nullable = false)
+    var isStored: Boolean = false
 
     lateinit var createdAt: Date
 
     @PrePersist
+    @PreUpdate
     fun prePersist() {
         createdAt = Date()
     }

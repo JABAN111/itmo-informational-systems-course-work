@@ -10,10 +10,10 @@ import org.springframework.web.bind.annotation.RestControllerAdvice
 @RestControllerAdvice
 class AuthExceptionHandlers {
 
-//    @ExceptionHandler(AuthorizationDeniedException::class)
-//    @ResponseStatus(HttpStatus.FORBIDDEN)
-//    fun objectNotExistException(e: ObjectNotExistException): String{
-//        return "Object not exist, details: ${e.message}"
-//    }
+    @ExceptionHandler(AuthorizationDeniedException::class)
+    @ResponseStatus(HttpStatus.I_AM_A_TEAPOT)
+    fun accessDenied(e: AuthorizationDeniedException): String{
+        return "Access denied"
+    }
 
 }

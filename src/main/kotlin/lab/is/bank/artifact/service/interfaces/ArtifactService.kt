@@ -8,7 +8,7 @@ interface ArtifactService {
     fun save(artifact: Artifact): Artifact
     fun save(artifactDto: ArtifactDto): Artifact
 
-    fun deleteArtifact(artifactName: String)
+    fun delete(artifactName: String)
 
     fun getDataForExport(someOwner: String?, someMagicProperty: List<String>?) : List<ArtifactExportData>
     fun getArtifact(artifactName: String) : Artifact?

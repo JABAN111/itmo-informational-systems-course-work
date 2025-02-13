@@ -30,7 +30,6 @@ class ExportArtifactServiceImpl(
 
         val headerRow = sheet.createRow(0)
         val headers = arrayOf(
-            "artifactId",
             "artifactName",
             "createdDate",
             "ownerPassportId",
@@ -44,13 +43,12 @@ class ExportArtifactServiceImpl(
 
         artifacts.forEachIndexed { rowIndex, artifact ->
             val row = sheet.createRow(rowIndex + 1)
-            row.createCell(0).setCellValue(artifact.artifactId.toString())
-            row.createCell(1).setCellValue(artifact.artifactName)
-            row.createCell(2).setCellValue(artifact.createdDate.toString())
-            row.createCell(3).setCellValue(artifact.ownerPassportId ?: "")
-            row.createCell(4).setCellValue(artifact.magicalDangerLevel ?: "")
-            row.createCell(5).setCellValue(artifact.lastChangeDate.toString())
-            row.createCell(6).setCellValue(artifact.lastReasonToSave ?: "")
+            row.createCell(0).setCellValue(artifact.artifactName)
+            row.createCell(1).setCellValue(artifact.createdDate.toString())
+            row.createCell(2).setCellValue(artifact.ownerPassportId ?: "")
+            row.createCell(3).setCellValue(artifact.magicalDangerLevel ?: "")
+            row.createCell(4).setCellValue(artifact.lastChangeDate.toString())
+            row.createCell(5).setCellValue(artifact.lastReasonToSave ?: "")
         }
 
         headers.indices.forEach { sheet.autoSizeColumn(it) }
@@ -84,7 +82,6 @@ class ExportArtifactServiceImpl(
         artifacts.forEach { artifact ->
             csvWriter.writeNext(
                 arrayOf(
-                    artifact.artifactId.toString(),
                     artifact.artifactName,
                     artifact.createdDate.toString(),
                     artifact.ownerPassportId ?: "",
@@ -116,7 +113,6 @@ class ExportArtifactServiceImpl(
         table.setWidth(100f)
 
         val headers = arrayOf(
-            "artifactId",
             "artifactName",
             "createdDate",
             "ownerPassportId",
@@ -135,7 +131,6 @@ class ExportArtifactServiceImpl(
             val rowColor = if (isEvenRow) DeviceGray(0.9f) else null
 
             val cells = arrayOf(
-                artifact.artifactId.toString(),
                 artifact.artifactName,
                 artifact.createdDate.toString(),
                 artifact.ownerPassportId ?: "",

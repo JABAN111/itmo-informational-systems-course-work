@@ -23,6 +23,10 @@ class ArtifactHistoryServiceImpl(
         return save(ArtifactHistoryMapper.toEntity(artifactHistoryDto))
     }
 
+    override fun delete(artifactName: String) {
+        artifactHistoryRepository.deleteByArtifactName(artifactName)
+    }
+
     override fun getArtifactHistory(uuid: UUID): ArtifactHistory? {
         return artifactHistoryRepository.findById(uuid).let {
             if (it.isEmpty) null else it.get()

@@ -39,6 +39,10 @@ class ClientServiceImpl(
             ?: throw ObjectNotExistException("Client with passportID $passportID not found")
     }
 
+    override fun get(passportID: String): Client? {
+        return clientRep.findByPassportID(passportID)
+    }
+
     override fun saveOrGet(clientDto: ClientDto): Client {
         return try {
             getIfClientExists(clientDto.passportID)

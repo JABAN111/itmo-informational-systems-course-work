@@ -6,15 +6,19 @@ import lab.`is`.bank.deposit.dto.DepositAccountDto
 import lab.`is`.bank.deposit.dto.OperationDto
 import lab.`is`.bank.deposit.service.interfaces.DepositService
 import org.springframework.web.bind.annotation.*
+import java.util.concurrent.atomic.AtomicInteger
 
 @RestController
 @RequestMapping("/api/v0/deposit")
 class DepositController(
     val depositService: DepositService
+
 ) {
+    private var counter: AtomicInteger = AtomicInteger(0)
 
     @PostMapping("/create")
     fun createDeposit(@RequestBody depositDto: DepositAccountDto): DepositAccount {
+        println(counter.incrementAndGet())
         return depositService.createDepositAccount(depositDto)
     }
 
@@ -36,6 +40,8 @@ class DepositController(
 
     @PostMapping("/add-money")
     fun addMoney(@RequestBody operationDto: OperationDto) : DepositAccount {
+        println(counter.incrementAndGet())
+
         return depositService.addMoney(operationDto)
     }
 

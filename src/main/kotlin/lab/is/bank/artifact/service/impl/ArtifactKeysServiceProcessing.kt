@@ -10,7 +10,7 @@ import lab.`is`.bank.artifact.database.entity.Key
 import lab.`is`.bank.artifact.database.repository.KeyRepository
 import lab.`is`.bank.authorization.dto.ClientDto
 import lab.`is`.bank.authorization.mapper.ClientMapper
-import lab.`is`.bank.artifact.service.exceptions.ArtifactExceptions
+import lab.`is`.bank.artifact.exception.ArtifactExceptions
 import lab.`is`.bank.authorization.service.interfaces.ClientService
 import org.apache.pdfbox.pdmodel.PDDocument
 import org.apache.pdfbox.pdmodel.PDPage
@@ -25,12 +25,16 @@ import java.util.*
 import io.jsonwebtoken.Jwts
 import io.jsonwebtoken.SignatureAlgorithm
 import io.jsonwebtoken.security.Keys
+import lab.`is`.bank.artifact.database.entity.Artifact
 import lab.`is`.bank.artifact.database.entity.ArtifactHistory
 import lab.`is`.bank.artifact.dto.*
-import lab.`is`.bank.artifact.service.exceptions.UsedBanWord
+import lab.`is`.bank.artifact.exception.ArtifactBelongToAnotherPersonException
+import lab.`is`.bank.artifact.exception.UsedBanWord
 import lab.`is`.bank.artifact.service.interfaces.*
 import lab.`is`.bank.artifact.service.interfaces.ArtifactKeysServiceProcessing
 import lab.`is`.bank.common.exception.ObjectAlreadyExistException
+import lab.`is`.bank.common.exception.ObjectNecessaryFieldEmptyException
+import lab.`is`.bank.common.exception.ObjectNotExistException
 import lab.`is`.bank.security.AuthUtilsService
 import org.springframework.dao.DuplicateKeyException
 import javax.crypto.SecretKey
@@ -38,9 +42,9 @@ import javax.crypto.SecretKey
 @Service
 @Transactional
 class ArtifactKeysServiceProcessing(
-    private val aiProcessingService: ArtifactValidationService,
+    private val aiProcessingService: AiOperatorService,
     private val clientService: ClientService,
-    private val keyRepository: KeyRepository,//todo удалить
+    private val keyRepository: KeyRepository,
     private val em: EntityManager,
     private val artifactService: ArtifactService,
     private val authUtilsService: AuthUtilsService,
@@ -78,8 +82,9 @@ class ArtifactKeysServiceProcessing(
             dto = ArtifactStorageDto(artifact = artifactDto)
         )
 
-        val artifactHistoryEntity: ArtifactHistory? = artifactHistoryService.getArtifactHistoryByArtifactName(artifactEntity)
-        if(artifactHistoryEntity == null) {
+        val artifactHistoryEntity: ArtifactHistory? =
+            artifactHistoryService.getArtifactHistoryByArtifactName(artifactEntity)
+        if (artifactHistoryEntity == null) {
             artifactHistoryService.save(
                 ArtifactHistoryDto(
                     artifact = artifactDto,
@@ -87,12 +92,15 @@ class ArtifactKeysServiceProcessing(
                     clientsHistory = mutableListOf(clientEntity)
                 )
             )
-        }else{
-            artifactHistoryEntity.apply { this.clientsHistory.add(clientEntity) }
+        } else {
+            artifactHistoryEntity.apply {
+                this.clientsHistory.add(clientEntity)
+                this.reasonToSave = reasonToSave
+            }
             artifactHistoryService.save(artifactHistoryEntity)
         }
 
-        val keyEntity = keyService.saveKey(
+        val keyEntity = keyService.save(
             Key().apply {
                 this.artifactStorage = artifactStorageEntity
                 this.client = clientEntity
@@ -106,6 +114,31 @@ class ArtifactKeysServiceProcessing(
 
         return keyEntity
     }
+
+    /**
+     * Название корректное, номинально оно должно выдавать ключ. Но так как эмулировать работу ячеек нет необходимости,
+     * то прямо здесь "забирается" артефакт
+     */
+    override fun getKey(retrievingKey: RetrieveArtifactRequest): Artifact {
+        if (retrievingKey.passportID.isBlank())
+            throw ObjectNecessaryFieldEmptyException("Field passportID is required")
+
+        val user = clientService.get(retrievingKey.passportID) ?: throw ObjectNotExistException("User not found")
+        val storage = artifactStorageService.get(retrievingKey.storageUuid)
+            ?: throw ObjectNotExistException("Storage not found")
+
+        if (storage.artifact.currentClient != user)
+            throw ArtifactBelongToAnotherPersonException("This storage belong to another person")
+
+        val artifactEntity = storage.artifact
+        artifactStorageService.delete(storage.uuid)
+        keyService.delete(storage)
+        artifactEntity.apply { this.isStored = false }
+        artifactService.save(artifactEntity)
+
+        return artifactEntity
+    }
+
 
     override fun generatePdfKey(key: Key): ByteArray {
         PDDocument().use { document ->
@@ -146,8 +179,28 @@ class ArtifactKeysServiceProcessing(
         }
     }
 
+    override fun takeArtifact(artifactName: String, clientPassport: String) {
+        val clientEntity = clientService.get(clientPassport)
+            ?: throw ObjectNotExistException("Client with name $clientPassport not found")
+        val artifactEntity = artifactService.getArtifact(artifactName)
+            ?: throw ObjectNotExistException("Artifact with name $artifactName not found")
+
+        if (artifactEntity.currentClient != clientEntity) {
+            throw ObjectAlreadyExistException("$clientPassport doesn't have access for this artifact")
+        }
+
+        val artifactStorageEntity = artifactStorageService.get(artifactName)
+        artifactStorageService.delete(artifactStorageEntity!!.uuid)
+        artifactStorageEntity.let { keyRepository.deleteKeyByArtifactStorage(it) }
+
+    }
+
+
     override fun getAllKeys(clientDto: ClientDto): List<Key> {
-        return keyRepository.findByClient(ClientMapper.toEntity(clientDto))
+        val clientEntity = ClientMapper.toEntity(clientDto)
+        val result = keyRepository.findByClientPassportID(clientEntity.passportID)
+        println(result)
+        return result
     }
 
     private fun generateQRCodeImage(text: String): BufferedImage {

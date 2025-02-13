@@ -1,6 +1,7 @@
 package lab.`is`.bank.common.handlers
 
 import org.springframework.http.HttpStatus
+import org.springframework.http.converter.HttpMessageNotReadableException
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestControllerAdvice
@@ -22,9 +23,14 @@ class UnpredictableExceptionHandlers {
     }
 
     @ExceptionHandler(RuntimeException::class)
-    @ResponseStatus
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
     fun runtimeException(e: RuntimeException): String {
-        e.printStackTrace()
         return "Unpredictable exception has been handled: ${e.message}"
+    }
+
+    @ExceptionHandler(HttpMessageNotReadableException::class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    fun httpMessageNotReadableException(e: HttpMessageNotReadableException): String {
+        return "Required request body is missing: ${e.message}"
     }
 }

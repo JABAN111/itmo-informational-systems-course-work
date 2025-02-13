@@ -8,6 +8,7 @@ import java.util.UUID
 interface ArtifactHistoryService {
     fun save(artifactHistory: ArtifactHistory): ArtifactHistory
     fun save(artifactHistoryDto: ArtifactHistoryDto): ArtifactHistory
+    fun delete(artifactName: String)
 
     fun getArtifactHistory(uuid: UUID): ArtifactHistory?
     fun getArtifactHistoryByArtifactName(artifact: Artifact): ArtifactHistory?

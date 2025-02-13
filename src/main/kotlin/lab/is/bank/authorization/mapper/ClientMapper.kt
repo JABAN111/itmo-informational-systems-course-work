@@ -9,9 +9,9 @@ class ClientMapper {
 
         fun toEntity(dto: ClientDto): Client {
             require(dto.passportID.isNotBlank()) { "Passport ID must not be blank" }
-            val client = Client()
-
-            client.passportID = dto.passportID
+            val client = Client().apply {
+                this.passportID = dto.passportID
+            }
             return client
         }
 

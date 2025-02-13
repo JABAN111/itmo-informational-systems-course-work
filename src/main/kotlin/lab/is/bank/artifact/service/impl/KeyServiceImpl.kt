@@ -1,6 +1,7 @@
 package lab.`is`.bank.artifact.service.impl
 
 import jakarta.transaction.Transactional
+import lab.`is`.bank.artifact.database.entity.ArtifactStorage
 import lab.`is`.bank.artifact.database.entity.Key
 import lab.`is`.bank.artifact.database.repository.KeyRepository
 import lab.`is`.bank.artifact.dto.KeyDto
@@ -14,7 +15,7 @@ import java.util.*
 class KeyServiceImpl(
     private val keyRepository: KeyRepository,
 ): KeyService {
-    override fun getKeyByUuid(uuid: UUID): Key? {
+    override fun get(uuid: UUID): Key? {
         val result = keyRepository.findById(uuid)
         return if(result.isEmpty){
             null
@@ -23,11 +24,19 @@ class KeyServiceImpl(
         }
     }
 
-    override fun saveKey(key: Key): Key {
+    override fun save(key: Key): Key {
         return keyRepository.save(key)
     }
 
-    override fun saveKey(keyDto: KeyDto): Key {
-        return saveKey(KeyMapper.toEntity(keyDto))
+    override fun save(keyDto: KeyDto): Key {
+        return save(KeyMapper.toEntity(keyDto))
+    }
+
+    override fun delete(clientPassport: String) {
+        keyRepository.deleteKeyByClientPassportID(clientPassport)
+    }
+
+    override fun delete(storage: ArtifactStorage) {
+        keyRepository.deleteKeyByArtifactStorage(storage)
     }
 }

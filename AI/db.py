@@ -1,3 +1,4 @@
+import time
 from typing import Any, Dict
 from datetime import datetime
 import os
@@ -77,7 +78,17 @@ class QueueService:
             return {"message": "Элемент обработан"}
 
 def init_db():
-    Base.metadata.create_all(engine)
+    while True:
+        try:
+            engine = create_engine(DATABASE_URL)
+            SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+            Base.metadata.create_all(engine)
+            break
+        except Exception as e:
+            print(f" Ошибка подключения к БД: {e}")
+            print(" Повторная попытка через 5 секунд...")
+            time.sleep(5)
+
 
 if(__name__ == "__main__"):
     init_db()

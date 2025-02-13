@@ -1,6 +1,5 @@
 from typing import Optional
 
-from dns.rdatatype import HTTPS
 from fastapi import FastAPI
 from prolog_processing import *
 from db import *
@@ -16,6 +15,7 @@ class PostRequest(BaseModel):
 logging.basicConfig(level=logging.INFO)
 log = logging.getLogger(__name__)
 app = FastAPI()
+init_db()
 
 @app.post("/")
 def root():

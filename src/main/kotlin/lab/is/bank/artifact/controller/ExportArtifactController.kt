@@ -16,8 +16,8 @@ class ExportArtifactController(
 ) {
     @GetMapping("/csv")
     fun getArtifactCsv(
-        @RequestParam("someOwner", required = false) someOwner: String?,
-        @RequestParam("someMagicProperty", required = false) someMagicProperty: List<String>?,
+        @RequestParam("accountId", required = false) someOwner: String?,
+        @RequestParam("types", required = false) someMagicProperty: List<String>?,
     ): ResponseEntity<ByteArray> {
         val data =
             exportArtifactService.exportArtifactsCSV(
@@ -35,8 +35,8 @@ class ExportArtifactController(
 
     @GetMapping("/pdf")
     fun getArtifactPdf(
-        @RequestParam("someOwner", required = false) someOwner: String?,
-        @RequestParam("someMagicProperty", required = false) someMagicProperty: List<String>?,
+        @RequestParam("accountId", required = false) someOwner: String?,
+        @RequestParam("types", required = false) someMagicProperty: List<String>?,
     ): ResponseEntity<ByteArray> {
         val data =
             exportArtifactService.exportArtifactsPdf(

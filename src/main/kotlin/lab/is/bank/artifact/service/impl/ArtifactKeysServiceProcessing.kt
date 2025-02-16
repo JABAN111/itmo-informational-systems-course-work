@@ -59,8 +59,8 @@ class ArtifactKeysServiceProcessing(
         clientPassport: String,
         reasonToSave: String,
     ): Key {
-        val lvl: String = aiProcessingService.levelOfDanger(artifactDto.name)
-        val magicProperty = aiProcessingService.getSpecification(artifactName = artifactDto.name)
+        val lvl: String = aiProcessingService.levelOfDanger(artifactDto.name).trim('"')
+        val magicProperty = aiProcessingService.getSpecification(artifactName = artifactDto.name).trim('"')
 
         artifactDto.magicalProperty = MagicalPropertyDto(dangerLevel = lvl, property = magicProperty)
 

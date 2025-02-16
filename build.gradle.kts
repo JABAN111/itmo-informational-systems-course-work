@@ -23,6 +23,8 @@ dependencies {
     implementation("com.opencsv:opencsv:5.7.1")
     implementation("com.fasterxml.jackson.core:jackson-databind:2.15.1")
     implementation("org.apache.poi:poi-ooxml:5.2.3")
+// https://mvnrepository.com/artifact/org.postgresql/postgresql
+    implementation("org.postgresql:postgresql:42.7.3")
     implementation("com.itextpdf:itext7-core:7.2.5")
     implementation("org.apache.pdfbox:pdfbox:2.0.30")
     implementation("com.google.zxing:core:3.5.3")

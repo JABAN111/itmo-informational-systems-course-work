@@ -35,17 +35,16 @@ interface ArtifactRepository : JpaRepository<Artifact, String> {
 
     @Query(
         """
-    SELECT * 
-    FROM get_filtered_artifacts(
+    select get_filtered_artifacts(
         :someOwner,
-        STRING_TO_ARRAY(:someMagicProperties, ',') 
+        :someMagicProperties
     )
     """,
         nativeQuery = true,
     )
     fun getFilteredArtifacts(
         @Param("someOwner") someOwner: String?,
-        @Param("someMagicProperties") someMagicProperties: String?,
+        @Param("someMagicProperties") someMagicProperties: Array<String>?,
     ): List<Tuple>
 }
 

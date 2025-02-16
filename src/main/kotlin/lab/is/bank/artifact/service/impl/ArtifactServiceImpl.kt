@@ -11,6 +11,8 @@ import lab.`is`.bank.artifact.mapper.ArtifactMapper
 import lab.`is`.bank.artifact.service.interfaces.ArtifactService
 import org.springframework.stereotype.Service
 import java.sql.Timestamp
+import org.postgresql.util.PGobject
+import java.text.SimpleDateFormat
 
 @Service
 @Transactional
@@ -43,28 +45,62 @@ class ArtifactServiceImpl(
         someOwner: String?,
         someMagicProperty: List<String>?,
     ): List<ArtifactExportData> {
-        val magicPropertiesString = someMagicProperty?.joinToString(",")
-        return mapTuplesToArtifactExportData(artifactRepository.getFilteredArtifacts(someOwner, magicPropertiesString))
+        val magicPropertiesArray = someMagicProperty?.toTypedArray()
+        return mapTuplesToArtifactExportData(artifactRepository.getFilteredArtifacts(someOwner, magicPropertiesArray))
     }
 
     override fun getArtifact(artifactName: String): Artifact? = artifactRepository.findByName(artifactName)
 
-    private fun mapTuplesToArtifactExportData(tuples: List<Tuple>): List<ArtifactExportData> =
-        tuples.map { tuple ->
-            val artifactName = tuple.get("artifact_nam", String::class.java)
-            val createdDate = tuple.get("created_date", Timestamp::class.java)
-            val ownerPassportId = tuple.get("owner_passport_id", String::class.java)
-            val magicalDangerLevel = tuple.get("magical_danger_level", String::class.java)
-            val lastChangeDate = tuple.get("last_change_date", Timestamp::class.java)
-            val lastReasonToSave = tuple.get("last_reason_to_save", String::class.java)
+    private fun mapTuplesToArtifactExportData(tuples: List<Tuple>): List<ArtifactExportData> {
+        val result = mutableListOf<ArtifactExportData>()
 
-            ArtifactExportData(
-                artifactName = artifactName,
-                createdDate = createdDate,
-                ownerPassportId = ownerPassportId,
-                magicalDangerLevel = magicalDangerLevel,
-                lastChangeDate = lastChangeDate,
-                lastReasonToSave = lastReasonToSave,
-            )
+        tuples.map { tuple ->
+            val artifactForExport = getArtifactExport(getStringFromPGobject(tuple.get(0)))
+            result.add(artifactForExport)
+
         }
+        return result
+    }
+
+
+
+    private fun getStringFromPGobject(value: Any?): String {
+        return if (value is PGobject) {
+            value.value ?: ""
+        } else {
+            value as? String ?: ""
+        }
+    }
+
+    private fun getArtifactExport(str: String): ArtifactExportData {
+        val data = str.trim('(').trim(')').split(",")
+
+        val artifactName = data[0]
+        val createdDate = convertStringToTimestamp(data[1].trim('"'))
+        val owner = data[2]
+        val magicProperty = data[3]
+        val lastModifiedDate = convertStringToTimestamp(data[4].trim('"'))
+        val lastReasonToSave = data[5]
+
+        val artifactExportData: ArtifactExportData = ArtifactExportData(
+            artifactName = artifactName,
+            createdDate = createdDate!!,
+            ownerPassportId = owner,
+            magicalDangerLevel = magicProperty,
+            lastChangeDate = lastModifiedDate,
+            lastReasonToSave = lastReasonToSave,
+        )
+        return artifactExportData
+    }
+
+    fun convertStringToTimestamp(dateString: String): Timestamp? {
+        val format = SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS")
+        return try {
+            val parsedDate = format.parse(dateString)
+            Timestamp(parsedDate.time)
+        } catch (e: Exception) {
+            throw RuntimeException(e)
+        }
+    }
+
 }

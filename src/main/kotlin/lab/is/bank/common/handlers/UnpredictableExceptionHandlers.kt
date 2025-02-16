@@ -11,8 +11,10 @@ import org.springframework.web.method.annotation.MethodArgumentTypeMismatchExcep
 class UnpredictableExceptionHandlers {
     @ExceptionHandler(MethodArgumentTypeMismatchException::class)
     @ResponseStatus(HttpStatus.CONFLICT)
-    fun methodArgumentTypeMismatchException(e: MethodArgumentTypeMismatchException): String =
-        "Argument type mismatch exception has been occurred: ${e.message}"
+    fun methodArgumentTypeMismatchException(e: MethodArgumentTypeMismatchException): String {
+        e.printStackTrace()
+        return "Argument type mismatch exception has been occurred: ${e.message}"
+    }
 
     @ExceptionHandler(IllegalArgumentException::class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
@@ -20,7 +22,10 @@ class UnpredictableExceptionHandlers {
 
     @ExceptionHandler(RuntimeException::class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    fun runtimeException(e: RuntimeException): String = "Unpredictable exception has been handled: ${e.message}"
+    fun runtimeException(e: RuntimeException) :String {
+        e.printStackTrace()
+        return "Unpredictable exception has been handled: ${e.message}"
+    }
 
     @ExceptionHandler(HttpMessageNotReadableException::class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)

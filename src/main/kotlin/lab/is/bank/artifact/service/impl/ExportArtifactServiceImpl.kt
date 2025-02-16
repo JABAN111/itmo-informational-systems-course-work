@@ -74,7 +74,6 @@ class ExportArtifactServiceImpl(
 
         csvWriter.writeNext(
             arrayOf(
-                "artifactId",
                 "artifactName",
                 "createdDate",
                 "ownerPassportId",
@@ -122,20 +121,16 @@ class ExportArtifactServiceImpl(
         val table = Table(floatArrayOf(2f, 6f, 4f, 4f, 4f, 4f, 4f))
         table.setWidth(100f)
 
-        val headers =
-            arrayOf(
-                "artifactName",
-                "createdDate",
-                "ownerPassportId",
-                "magicalDangerLevel",
-                "lastChangeDate",
-                "lastReasonToSave",
-            )
+        // Заголовки
+        val headers = arrayOf(
+            "artifactName", "createdDate", "ownerPassportId", "magicalDangerLevel", "lastChangeDate", "lastReasonToSave"
+        )
         headers.forEach { header ->
-            val headerCell =
-                Cell()
-                    .add(Paragraph(header))
-                    .setBold()
+            val headerCell = Cell()
+                .add(Paragraph(header))
+                .setBold()
+                .setTextAlignment(com.itextpdf.layout.properties.TextAlignment.CENTER)
+                .setBackgroundColor(DeviceGray(0.75f))
             table.addHeaderCell(headerCell)
         }
 
@@ -143,18 +138,20 @@ class ExportArtifactServiceImpl(
             val isEvenRow = rowIndex % 2 == 0
             val rowColor = if (isEvenRow) DeviceGray(0.9f) else null
 
-            val cells =
-                arrayOf(
-                    artifact.artifactName,
-                    artifact.createdDate.toString(),
-                    artifact.ownerPassportId ?: "",
-                    artifact.magicalDangerLevel ?: "",
-                    artifact.lastChangeDate.toString(),
-                    artifact.lastReasonToSave ?: "",
-                )
+            val cells = arrayOf(
+                artifact.artifactName,
+                artifact.createdDate.toString(),
+                artifact.ownerPassportId ?: "",
+                artifact.magicalDangerLevel ?: "",
+                artifact.lastChangeDate.toString(),
+                artifact.lastReasonToSave ?: "",
+            )
 
             cells.forEach { cellValue ->
-                val cell = Cell().add(Paragraph(cellValue))
+                val cell = Cell()
+                    .add(Paragraph(cellValue))
+                    .setTextAlignment(com.itextpdf.layout.properties.TextAlignment.CENTER)
+
                 rowColor?.let { cell.setBackgroundColor(it) }
                 table.addCell(cell)
             }

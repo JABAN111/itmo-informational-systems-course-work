@@ -33,7 +33,7 @@ alter function get_account_transactions_multiple_types(uuid, text[]) owner to "u
 
 CREATE OR REPLACE FUNCTION get_filtered_artifacts(
     some_owner TEXT DEFAULT NULL,
-    some_magic_properties TEXT[] DEFAULT NULL
+    some_magic_properties VARCHAR[] DEFAULT NULL
 )
     RETURNS TABLE(
                      artifact_nam VARCHAR,
@@ -62,12 +62,12 @@ BEGIN
 
 
         WHERE (c.passportid = some_owner OR some_owner IS NULL)
-          AND (some_magic_properties IS NULL OR mp.danger_level = ANY(some_magic_properties))
+          AND (some_magic_properties IS NULL OR mp.danger_level like ANY(some_magic_properties))
         ORDER BY a.created_at DESC;
 END;
 $$;
 
-ALTER FUNCTION get_filtered_artifacts(TEXT, TEXT[]) OWNER TO "user";
+ALTER FUNCTION get_filtered_artifacts(TEXT, VARCHAR[]) OWNER TO "user";
 
 
 

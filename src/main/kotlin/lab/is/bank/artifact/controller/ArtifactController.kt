@@ -55,7 +55,7 @@ class ArtifactController(
             .body(pdfBytes)
     }
 
-    @GetMapping("/keys")
+    @PostMapping("/keys")
     @Operation(summary = "Get all keys", description = "Retrieves all artifact keys for a client")
     fun getAllKeysData(
         @RequestBody clientDto: ClientDto,

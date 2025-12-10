@@ -1,5 +1,8 @@
 package lab.`is`.bank.artifact.controller
 
+import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.Parameter
+import io.swagger.v3.oas.annotations.tags.Tag
 import lab.`is`.bank.artifact.service.interfaces.ExportArtifactService
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
@@ -11,13 +14,15 @@ import org.springframework.web.bind.annotation.RestController
 
 @RestController
 @RequestMapping("/api/v0/export/artifact")
+@Tag(name = "Artifact Export", description = "Export artifact data in various formats")
 class ExportArtifactController(
     private val exportArtifactService: ExportArtifactService,
 ) {
     @GetMapping("/csv")
+    @Operation(summary = "Export artifacts to CSV", description = "Exports artifact data to CSV format")
     fun getArtifactCsv(
-        @RequestParam("accountId", required = false) someOwner: String?,
-        @RequestParam("types", required = false) someMagicProperty: List<String>?,
+        @Parameter(description = "Account ID filter") @RequestParam("accountId", required = false) someOwner: String?,
+        @Parameter(description = "Artifact types filter") @RequestParam("types", required = false) someMagicProperty: List<String>?,
     ): ResponseEntity<ByteArray> {
         val data =
             exportArtifactService.exportArtifactsCSV(
@@ -34,9 +39,10 @@ class ExportArtifactController(
     }
 
     @GetMapping("/pdf")
+    @Operation(summary = "Export artifacts to PDF", description = "Exports artifact data to PDF format")
     fun getArtifactPdf(
-        @RequestParam("accountId", required = false) someOwner: String?,
-        @RequestParam("types", required = false) someMagicProperty: List<String>?,
+        @Parameter(description = "Account ID filter") @RequestParam("accountId", required = false) someOwner: String?,
+        @Parameter(description = "Artifact types filter") @RequestParam("types", required = false) someMagicProperty: List<String>?,
     ): ResponseEntity<ByteArray> {
         val data =
             exportArtifactService.exportArtifactsPdf(
@@ -53,9 +59,10 @@ class ExportArtifactController(
     }
 
     @GetMapping("/xlsx")
+    @Operation(summary = "Export artifacts to XLSX", description = "Exports artifact data to Excel format")
     fun getArtifactXlsx(
-        @RequestParam("accountId", required = false) accountId: String?,
-        @RequestParam("types", required = false) types: List<String>?,
+        @Parameter(description = "Account ID filter") @RequestParam("accountId", required = false) accountId: String?,
+        @Parameter(description = "Artifact types filter") @RequestParam("types", required = false) types: List<String>?,
     ): ResponseEntity<ByteArray> {
         val data =
             exportArtifactService.exportArtifactsXLSX(

@@ -1,5 +1,8 @@
 package lab.`is`.bank.deposit.controller
 
+import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.Parameter
+import io.swagger.v3.oas.annotations.tags.Tag
 import lab.`is`.bank.deposit.service.interfaces.ExportDepositService
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
@@ -12,13 +15,15 @@ import java.util.*
 
 @RestController
 @RequestMapping("/api/v0/export/deposit")
+@Tag(name = "Deposit Export", description = "Export deposit data in various formats")
 class ExportDepositController(
     private val exportDepositService: ExportDepositService,
 ) {
     @GetMapping("/xlsx")
+    @Operation(summary = "Export deposits to XLSX", description = "Exports deposit transactions to Excel format")
     fun getDepositsXLSX(
-        @RequestParam("accountId") accountId: UUID,
-        @RequestParam("types") types: Array<String>,
+        @Parameter(description = "Deposit account ID") @RequestParam("accountId") accountId: UUID,
+        @Parameter(description = "Transaction types to export") @RequestParam("types") types: Array<String>,
     ): ResponseEntity<ByteArray> {
         val data = exportDepositService.exportDepositsXLSX(accountId, types)
 
@@ -31,9 +36,10 @@ class ExportDepositController(
     }
 
     @GetMapping("/csv")
+    @Operation(summary = "Export deposits to CSV", description = "Exports deposit transactions to CSV format")
     fun getDepositsCSV(
-        @RequestParam("accountId") accountId: UUID,
-        @RequestParam("types") types: Array<String>,
+        @Parameter(description = "Deposit account ID") @RequestParam("accountId") accountId: UUID,
+        @Parameter(description = "Transaction types to export") @RequestParam("types") types: Array<String>,
     ): ResponseEntity<ByteArray> {
         println(types)
         val data = exportDepositService.exportDepositsCSV(accountId, types)
@@ -47,9 +53,10 @@ class ExportDepositController(
     }
 
     @GetMapping("/pdf")
+    @Operation(summary = "Export deposits to PDF", description = "Exports deposit transactions to PDF format")
     fun getDepositsPdf(
-        @RequestParam("accountId") accountId: UUID,
-        @RequestParam("types") types: Array<String>,
+        @Parameter(description = "Deposit account ID") @RequestParam("accountId") accountId: UUID,
+        @Parameter(description = "Transaction types to export") @RequestParam("types") types: Array<String>,
     ): ResponseEntity<ByteArray> {
         val data = exportDepositService.exportDepositsPdf(accountId, types)
 

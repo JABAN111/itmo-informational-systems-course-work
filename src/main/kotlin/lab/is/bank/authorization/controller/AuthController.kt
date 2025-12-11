@@ -1,5 +1,8 @@
 package lab.`is`.bank.authorization.controller
 
+import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.Parameter
+import io.swagger.v3.oas.annotations.tags.Tag
 import lab.`is`.bank.authorization.dto.StaffDto
 import lab.`is`.bank.authorization.service.interfaces.StaffService
 import lab.`is`.bank.security.JwtServiceImpl
@@ -8,6 +11,7 @@ import org.springframework.web.bind.annotation.*
 
 @RestController
 @RequestMapping("/registration")
+@Tag(name = "Authentication", description = "User registration and authentication API")
 class AuthController(
     private val staffService: StaffService,
     private val jwtServiceImpl: JwtServiceImpl,
@@ -23,8 +27,9 @@ class AuthController(
      *
      */
     @PostMapping("/register")
+    @Operation(summary = "Register user", description = "Synchronizes staff data from Keycloak token")
     fun register(
-        @RequestHeader("Authorization") token: String,
+        @Parameter(description = "JWT Bearer token") @RequestHeader("Authorization") token: String,
     ): ResponseEntity<String> {
         val jwt = token.removePrefix("Bearer ")
         val username = jwtServiceImpl.extractUserName(jwt)

@@ -22,17 +22,7 @@ class ArtifactStorageServiceImpl(
 
     override fun get(artifactName: String): ArtifactStorage? {
         val res = artifactStorageRepository.findByArtifactName(artifactName)
-
-        if (res.isNotEmpty()) {
-            println(res.values)
-            res["uuid"]
-
-            val uuid = UUID.fromString(res["uuid"].toString())
-
-            return artifactStorageRepository.findById(uuid).orElse(null)
-        }
-
-        return null
+        return res.firstOrNull()
     }
 
     override fun delete(uuid: UUID) = artifactStorageRepository.deleteById(uuid)

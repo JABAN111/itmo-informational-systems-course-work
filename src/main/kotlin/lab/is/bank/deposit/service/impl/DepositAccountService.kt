@@ -69,13 +69,19 @@ class DepositAccountService(
             ObjectNotExistException("Аккаунт не найден")
         }
 
+    private fun getDepositAccountByUUIDWithLock(uuid: UUID): DepositAccount =
+        depositAccountRepository.findByIdWithLock(uuid).orElseThrow {
+            log.warn("cannot find the account by uuid: $uuid")
+            ObjectNotExistException("Аккаунт не найден")
+        }
+
     override fun getDepositsByUser(userDto: ClientDto): List<DepositAccount> =
         depositAccountRepository.findDepositAccountsByOwnerPassportID(userDto.passportID)
 
     override fun addMoney(operationDto: OperationDto): DepositAccount {
         validateOperationDto(dto = operationDto)
 
-        val account = getDepositAccountByUUID(operationDto.fromAccount)
+        val account = getDepositAccountByUUIDWithLock(operationDto.fromAccount)
         val amount = operationDto.amount
         if (amount < BigDecimal.ZERO) {
             transactionService.registerFailedTransaction(
@@ -142,7 +148,7 @@ class DepositAccountService(
     override fun withdrawMoney(operationDto: OperationDto): DepositAccount {
         validateOperationDto(dto = operationDto)
 
-        val account = getDepositAccountByUUID(operationDto.fromAccount)
+        val account = getDepositAccountByUUIDWithLock(operationDto.fromAccount)
         val amount = operationDto.amount
 
         if (account.balance.minus(amount) < BigDecimal.ZERO) {

@@ -12,10 +12,10 @@ import java.util.*
 interface ArtifactStorageRepository : JpaRepository<ArtifactStorage, UUID> {
     fun findByUuid(uuid: UUID): ArtifactStorage?
 
-    @Query(nativeQuery = true, value = "select * from artifact_storage where artifact_name = :artifactName")
+    @Query("SELECT a FROM ArtifactStorage a WHERE a.artifact.name = :artifactName")
     fun findByArtifactName(
         @Param("artifactName") artifactName: String,
-    ): Map<String, Tuple>
+    ): List<ArtifactStorage>
 }
 
 @Repository

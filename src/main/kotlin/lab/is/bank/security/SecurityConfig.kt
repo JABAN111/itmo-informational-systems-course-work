@@ -32,7 +32,7 @@ class SecurityConfig(
                 cors.configurationSource {
                     CorsConfiguration().apply {
                         allowedOriginPatterns = listOf("*")
-                        allowedMethods = listOf("GET", "POST", "PATCH", "PUT", "DELETE", "OPTIONS")
+                        allowedMethods = listOf("GET", "POST", "PUT", "DELETE")
                         allowedHeaders = listOf("*")
                         allowCredentials = true
                     }

@@ -6,6 +6,8 @@ import io.swagger.v3.oas.annotations.tags.Tag
 import lab.`is`.bank.authorization.dto.StaffDto
 import lab.`is`.bank.authorization.service.interfaces.StaffService
 import lab.`is`.bank.security.JwtServiceImpl
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 
@@ -16,6 +18,7 @@ class AuthController(
     private val staffService: StaffService,
     private val jwtServiceImpl: JwtServiceImpl,
 ) {
+    private val log: Logger = LoggerFactory.getLogger(AuthController::class.java)
     /**
      * Ужасный костыль, по идее его должен был бы заменить какой-нибудь брокер сообщений
      *
@@ -31,12 +34,25 @@ class AuthController(
     fun register(
         @Parameter(description = "JWT Bearer token") @RequestHeader("Authorization") token: String,
     ): ResponseEntity<String> {
-        val jwt = token.removePrefix("Bearer ")
-        val username = jwtServiceImpl.extractUserName(jwt)
-        val role = jwtServiceImpl.extractRoles(jwt)
-        val dto = StaffDto(username, role)
-        staffService.getOrCreateStaff(dto)
+        log.info("Received registration request")
+        try {
+            val jwt = token.removePrefix("Bearer ")
+            log.debug("Extracted JWT token from Authorization header")
 
-        return ResponseEntity.ok("Пользователь $username зарегистрирован")
+            val username = jwtServiceImpl.extractUserName(jwt)
+            log.info("Registering user from Keycloak token: $username")
+
+            val role = jwtServiceImpl.extractRoles(jwt)
+            log.debug("User role from Keycloak: $role")
+
+            val dto = StaffDto(username, role)
+            staffService.getOrCreateStaff(dto)
+
+            log.info("Successfully registered/synchronized user: $username")
+            return ResponseEntity.ok("Пользователь $username зарегистрирован")
+        } catch (e: Exception) {
+            log.error("Failed to register user from Keycloak token: ${e.message}", e)
+            throw e
+        }
     }
 }
